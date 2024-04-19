@@ -5,7 +5,7 @@ This module contains the main application logic.
 """
 
 from pathlib import Path
-from typing import Dict, List, Tuple, Type
+from typing import Optional, Dict, List, Tuple, Type
 
 from .base_converter import BaseConverter, ResolvedInputFile
 from .filetypes import FileType
@@ -22,9 +22,9 @@ class BaseConverterApp:
     def __init__(
         self,
         input_file_paths: List[str],
-        input_file_type: str = None,
-        output_file_path: str = None,
-        output_file_type: str = None,
+        input_file_type: Optional[str] = None,
+        output_file_path: Optional[str] = None,
+        output_file_type: Optional[str] = None,
     ):
         """
         Initializes the BaseConverterApp instance.
@@ -98,12 +98,12 @@ class BaseConverterApp:
             (converter_class.get_input_type(), converter_class.get_output_type())
         ] = converter_class
 
-    def get_supported_conversions(self) -> Tuple[Tuple[FileType]]:
+    def get_supported_conversions(self) -> Tuple[Tuple[FileType, FileType], ...]:
         """
         Retrieves the supported conversions.
 
         Returns:
-            Tuple[Tuple[FileType]]: A tuple of tuples representing supported conversions.
+            Tuple[Tuple[FileType, FileType]]: A tuple of tuples representing supported conversions.
         """
         return tuple(self._dict_converters.keys())
 

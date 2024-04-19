@@ -17,7 +17,7 @@ Exceptions:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Union
+from typing import Optional, List, Union
 
 from .filetypes import EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
@@ -31,10 +31,10 @@ class ResolvedInputFile:
 
     def __init__(
         self,
-        path: Path,
-        is_dir: bool = None,
+        path: Union[str, Path],
+        is_dir: Optional[bool] = None,
         should_exist: bool = True,
-        file_type: str = None,
+        file_type: Optional[str] = None,
         add_suffix: bool = False,
         read_content: bool = False,
     ):
@@ -69,7 +69,7 @@ class ResolvedInputFile:
             )
             self.is_dir = False
 
-    def _resolve_path_type(self, file_type: str = None) -> bool:
+    def _resolve_path_type(self, file_type: Optional[str] = None) -> bool:
         """
         Determines if the provided path refers to a directory or a file, based on its existence, suffix, and file_type.
 
@@ -170,12 +170,11 @@ class ResolvedInputFile:
         """
         if not file_type:
             try:
-                file_type = FileType.from_path(
+                return FileType.from_path(
                     file_path, read_content=read_content, raise_err=True
                 )
             except EmptySuffixError:
                 raise ValueError("filepath suffix is emtpy but file_type not set")
-            return file_type
 
         resolved_file_type = FileType.from_suffix(file_type, raise_err=True)
 
@@ -429,7 +428,7 @@ class BaseConverter(ABC):
 
     @abstractmethod
     def _convert(
-        self, input_contents: List, output_file: Path = None, output_folder: Path = None
+        self, input_contents: List, output_file: Optional[Path] = None, output_folder: Optional[Path] = None
     ):
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.

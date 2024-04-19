@@ -19,7 +19,7 @@ class FileReader(ABC):
     Abstract base class for file readers.
     """
 
-    input_format = None
+    input_format: type = None
 
     @abstractmethod
     def _check_input_format(self, content: Any) -> bool:

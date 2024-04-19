@@ -29,6 +29,7 @@ Dependencies:
 from collections import namedtuple
 from enum import Enum
 from pathlib import Path
+from typing import Union
 
 from .mimes import guess_mime_type_from_file
 
@@ -78,22 +79,15 @@ class FileType(Enum):
     """Enumeration of supported file types with methods for type determination and validation."""
 
     # Enum members defined with their respective MIME type information
-    NOTYPE = MimeType([], [])
-    CSV = MimeType(["csv"], ["text/csv"])
+    NOTYPE = MimeType()
+    CSV = MimeType(("csv",), ("text/csv",))
     EXCEL = MimeType(
-        ["xls", "xlsx"],
-        [
+        ("xls", "xlsx"),
+        (
             "application/vnd.ms-excel",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ],
+        ),
     )
-    JSON = MimeType(["json"], ["application/json"])
-    PDF = MimeType(["pdf"], ["application/pdf"])
-    IMAGE = MimeType(["jpg", "jpeg", "png"], ["image/jpeg", "image/png"])
-    GIF = MimeType(["gif"], ["image/gif"])
-    VIDEO = MimeType(["mp4", "avi"], ["video/mp4", "video/x-msvideo"])
-    XML = MimeType(["xml"], ["application/xml", "text/xml"])
-    MARKDOWN = MimeType(["md"], ["text/markdown"], ["text/plain"])
     MSWORD = MimeType(
         ("docx", "doc"),
         (
@@ -101,10 +95,17 @@ class FileType(Enum):
             "application/msword",
         ),
     )
+    JSON = MimeType(("json",), ("application/json",))
+    PDF = MimeType(("pdf",), ("application/pdf",))
+    IMAGE = MimeType(("jpg", "jpeg", "png"), ("image/jpeg", "image/png"))
+    GIF = MimeType(("gif",), ("image/gif",))
+    VIDEO = MimeType(("mp4", "avi"), ("video/mp4", "video/x-msvideo"))
+    XML = MimeType(("xml",), ("application/xml", "text/xml"))
+    MARKDOWN = MimeType(("md",), ("text/markdown",), ("text/plain",))
     TEXT = MimeType(
-        ["txt"], ["text/plain"]
+        ("txt",), ("text/plain",)
     )  # put it at bottom as many other filetypes may be marked as text/plain too
-    UNHANDLED = MimeType([], [])
+    UNHANDLED = MimeType()
 
     @classmethod
     def from_suffix(cls, suffix: str, raise_err: bool = False):
@@ -138,7 +139,7 @@ class FileType(Enum):
             return cls.UNHANDLED
 
     @classmethod
-    def from_mimetype(cls, file_path: str, raise_err: bool = False):
+    def from_mimetype(cls, file_path: Union[str, Path], raise_err: bool = False):
         """
         Determines a FileType from a file's MIME type.
 
