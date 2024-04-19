@@ -94,6 +94,13 @@ class FileType(Enum):
     VIDEO = MimeType(["mp4", "avi"], ["video/mp4", "video/x-msvideo"])
     XML = MimeType(["xml"], ["application/xml", "text/xml"])
     MARKDOWN = MimeType(["md"], ["text/markdown"], ["text/plain"])
+    MSWORD = MimeType(
+        ("docx", "doc"),
+        (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",
+        ),
+    )
     TEXT = MimeType(
         ["txt"], ["text/plain"]
     )  # put it at bottom as many other filetypes may be marked as text/plain too
