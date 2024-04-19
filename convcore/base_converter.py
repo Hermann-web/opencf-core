@@ -60,7 +60,7 @@ class ResolvedInputFile:
 
         # Resolve the file type
         if is_dir:
-            assert file_type, f"file_type must be set when is_dir is activated"
+            assert file_type, "file_type must be set when is_dir is activated"
             self.file_type, self.suffix = self._resolve_directory_type(file_type)
             self.is_dir = True
         else:
@@ -106,7 +106,6 @@ class ResolvedInputFile:
         return is_dir
 
     def _check_existence(self, should_exist: bool):
-
         if should_exist and not self.path.exists():
             raise ValueError(
                 f"The specified file or folder '{self.path}' does not exist, but existence is required."
@@ -318,12 +317,12 @@ class BaseConverter(ABC):
         if self.folder_as_output:
             assert (
                 output_path.is_dir()
-            ), f"output_path is file while a folder is required for this conversion"
+            ), f"output_path {output_path} is not a dir while a folder is required for this conversion"
             kwargs["output_folder"] = output_path
         else:
             if output_path.is_dir():
                 suffix = self.get_supported_output_type().get_suffix()
-                output_path = (output_path / f"fileconv-output").with_suffix(suffix)
+                output_path = (output_path / "fileconv-output").with_suffix(suffix)
             kwargs["output_file"] = output_path
         return kwargs, output_path
 
