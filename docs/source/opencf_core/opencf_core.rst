@@ -1,41 +1,41 @@
-convcore package
-================
+opencf\_core package
+====================
 
 Submodules
 ----------
 
 
-.. automodule:: convcore.base_converter
+.. automodule:: opencf_core.base_converter
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: convcore.converter_app
+.. automodule:: opencf_core.converter_app
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: convcore.filetypes
+.. automodule:: opencf_core.filetypes
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: convcore.io_handler
+.. automodule:: opencf_core.io_handler
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: convcore.logger
+.. automodule:: opencf_core.logger
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: convcore.mimes
+.. automodule:: opencf_core.mimes
    :members:
    :undoc-members:
    :show-inheritance:
@@ -43,7 +43,7 @@ Submodules
 Module contents
 ---------------
 
-.. automodule:: convcore
+.. automodule:: opencf_core
    :members:
    :undoc-members:
    :show-inheritance:

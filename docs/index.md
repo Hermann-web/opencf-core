@@ -1,71 +1,71 @@
 # Table of Contents
 
-* [convcore](#convcore)
-* [convcore.logger](#convcore.logger)
-  * [setup\_logger](#convcore.logger.setup_logger)
-* [convcore.converter\_app](#convcore.converter_app)
-  * [BaseConverterApp](#convcore.converter_app.BaseConverterApp)
-    * [\_\_init\_\_](#convcore.converter_app.BaseConverterApp.__init__)
-    * [add\_converter\_pair](#convcore.converter_app.BaseConverterApp.add_converter_pair)
-    * [get\_supported\_conversions](#convcore.converter_app.BaseConverterApp.get_supported_conversions)
-    * [run](#convcore.converter_app.BaseConverterApp.run)
-* [convcore.io\_handler](#convcore.io_handler)
-  * [FileReader](#convcore.io_handler.FileReader)
-  * [FileWriter](#convcore.io_handler.FileWriter)
-  * [SamePathReader](#convcore.io_handler.SamePathReader)
-  * [TxtToStrReader](#convcore.io_handler.TxtToStrReader)
-  * [StrToTxtWriter](#convcore.io_handler.StrToTxtWriter)
-  * [CsvToListReader](#convcore.io_handler.CsvToListReader)
-  * [ListToCsvWriter](#convcore.io_handler.ListToCsvWriter)
-  * [JsonToDictReader](#convcore.io_handler.JsonToDictReader)
-  * [DictToJsonWriter](#convcore.io_handler.DictToJsonWriter)
-  * [XmlToStrReader](#convcore.io_handler.XmlToStrReader)
-  * [StrToXmlWriter](#convcore.io_handler.StrToXmlWriter)
-* [convcore.mimes](#convcore.mimes)
-  * [MimeGuesser](#convcore.mimes.MimeGuesser)
-    * [\_\_new\_\_](#convcore.mimes.MimeGuesser.__new__)
-    * [get\_mime\_guesser](#convcore.mimes.MimeGuesser.get_mime_guesser)
-    * [guess\_mime\_type\_from\_file](#convcore.mimes.MimeGuesser.guess_mime_type_from_file)
-  * [guess\_mime\_type\_from\_file](#convcore.mimes.guess_mime_type_from_file)
-* [convcore.filetypes](#convcore.filetypes)
-  * [UnsupportedFileTypeError](#convcore.filetypes.UnsupportedFileTypeError)
-  * [EmptySuffixError](#convcore.filetypes.EmptySuffixError)
-  * [FileNotFoundError](#convcore.filetypes.FileNotFoundError)
-  * [MismatchedException](#convcore.filetypes.MismatchedException)
-  * [FileType](#convcore.filetypes.FileType)
-    * [TEXT](#convcore.filetypes.FileType.TEXT)
-    * [from\_suffix](#convcore.filetypes.FileType.from_suffix)
-    * [from\_mimetype](#convcore.filetypes.FileType.from_mimetype)
-    * [from\_path](#convcore.filetypes.FileType.from_path)
-    * [is\_true\_filetype](#convcore.filetypes.FileType.is_true_filetype)
-    * [get\_suffix](#convcore.filetypes.FileType.get_suffix)
-    * [is\_valid\_suffix](#convcore.filetypes.FileType.is_valid_suffix)
-    * [is\_valid\_path](#convcore.filetypes.FileType.is_valid_path)
-    * [is\_valid\_mime\_type](#convcore.filetypes.FileType.is_valid_mime_type)
-  * [test\_file\_type\_parsing](#convcore.filetypes.test_file_type_parsing)
-  * [test\_file\_type\_matching](#convcore.filetypes.test_file_type_matching)
-* [convcore.base\_converter](#convcore.base_converter)
-  * [ResolvedInputFile](#convcore.base_converter.ResolvedInputFile)
-    * [\_\_init\_\_](#convcore.base_converter.ResolvedInputFile.__init__)
-    * [\_\_resolve\_filetype\_\_](#convcore.base_converter.ResolvedInputFile.__resolve_filetype__)
-    * [\_\_str\_\_](#convcore.base_converter.ResolvedInputFile.__str__)
-    * [\_\_repr\_\_](#convcore.base_converter.ResolvedInputFile.__repr__)
-  * [BaseConverter](#convcore.base_converter.BaseConverter)
-    * [\_\_init\_\_](#convcore.base_converter.BaseConverter.__init__)
-    * [convert](#convcore.base_converter.BaseConverter.convert)
-    * [check\_io\_handlers](#convcore.base_converter.BaseConverter.check_io_handlers)
-    * [get\_supported\_input\_type](#convcore.base_converter.BaseConverter.get_supported_input_type)
-    * [get\_supported\_output\_type](#convcore.base_converter.BaseConverter.get_supported_output_type)
+* [opencf_core](#opencf_core)
+* [opencf_core.logger](#opencf_core.logger)
+  * [setup\_logger](#opencf_core.logger.setup_logger)
+* [opencf_core.converter\_app](#opencf_core.converter_app)
+  * [BaseConverterApp](#opencf_core.converter_app.BaseConverterApp)
+    * [\_\_init\_\_](#opencf_core.converter_app.BaseConverterApp.__init__)
+    * [add\_converter\_pair](#opencf_core.converter_app.BaseConverterApp.add_converter_pair)
+    * [get\_supported\_conversions](#opencf_core.converter_app.BaseConverterApp.get_supported_conversions)
+    * [run](#opencf_core.converter_app.BaseConverterApp.run)
+* [opencf_core.io\_handler](#opencf_core.io_handler)
+  * [FileReader](#opencf_core.io_handler.FileReader)
+  * [FileWriter](#opencf_core.io_handler.FileWriter)
+  * [SamePathReader](#opencf_core.io_handler.SamePathReader)
+  * [TxtToStrReader](#opencf_core.io_handler.TxtToStrReader)
+  * [StrToTxtWriter](#opencf_core.io_handler.StrToTxtWriter)
+  * [CsvToListReader](#opencf_core.io_handler.CsvToListReader)
+  * [ListToCsvWriter](#opencf_core.io_handler.ListToCsvWriter)
+  * [JsonToDictReader](#opencf_core.io_handler.JsonToDictReader)
+  * [DictToJsonWriter](#opencf_core.io_handler.DictToJsonWriter)
+  * [XmlToStrReader](#opencf_core.io_handler.XmlToStrReader)
+  * [StrToXmlWriter](#opencf_core.io_handler.StrToXmlWriter)
+* [opencf_core.mimes](#opencf_core.mimes)
+  * [MimeGuesser](#opencf_core.mimes.MimeGuesser)
+    * [\_\_new\_\_](#opencf_core.mimes.MimeGuesser.__new__)
+    * [get\_mime\_guesser](#opencf_core.mimes.MimeGuesser.get_mime_guesser)
+    * [guess\_mime\_type\_from\_file](#opencf_core.mimes.MimeGuesser.guess_mime_type_from_file)
+  * [guess\_mime\_type\_from\_file](#opencf_core.mimes.guess_mime_type_from_file)
+* [opencf_core.filetypes](#opencf_core.filetypes)
+  * [UnsupportedFileTypeError](#opencf_core.filetypes.UnsupportedFileTypeError)
+  * [EmptySuffixError](#opencf_core.filetypes.EmptySuffixError)
+  * [FileNotFoundError](#opencf_core.filetypes.FileNotFoundError)
+  * [MismatchedException](#opencf_core.filetypes.MismatchedException)
+  * [FileType](#opencf_core.filetypes.FileType)
+    * [TEXT](#opencf_core.filetypes.FileType.TEXT)
+    * [from\_suffix](#opencf_core.filetypes.FileType.from_suffix)
+    * [from\_mimetype](#opencf_core.filetypes.FileType.from_mimetype)
+    * [from\_path](#opencf_core.filetypes.FileType.from_path)
+    * [is\_true\_filetype](#opencf_core.filetypes.FileType.is_true_filetype)
+    * [get\_suffix](#opencf_core.filetypes.FileType.get_suffix)
+    * [is\_valid\_suffix](#opencf_core.filetypes.FileType.is_valid_suffix)
+    * [is\_valid\_path](#opencf_core.filetypes.FileType.is_valid_path)
+    * [is\_valid\_mime\_type](#opencf_core.filetypes.FileType.is_valid_mime_type)
+  * [test\_file\_type\_parsing](#opencf_core.filetypes.test_file_type_parsing)
+  * [test\_file\_type\_matching](#opencf_core.filetypes.test_file_type_matching)
+* [opencf_core.base\_converter](#opencf_core.base_converter)
+  * [ResolvedInputFile](#opencf_core.base_converter.ResolvedInputFile)
+    * [\_\_init\_\_](#opencf_core.base_converter.ResolvedInputFile.__init__)
+    * [\_\_resolve\_filetype\_\_](#opencf_core.base_converter.ResolvedInputFile.__resolve_filetype__)
+    * [\_\_str\_\_](#opencf_core.base_converter.ResolvedInputFile.__str__)
+    * [\_\_repr\_\_](#opencf_core.base_converter.ResolvedInputFile.__repr__)
+  * [BaseConverter](#opencf_core.base_converter.BaseConverter)
+    * [\_\_init\_\_](#opencf_core.base_converter.BaseConverter.__init__)
+    * [convert](#opencf_core.base_converter.BaseConverter.convert)
+    * [check\_io\_handlers](#opencf_core.base_converter.BaseConverter.check_io_handlers)
+    * [get\_supported\_input\_type](#opencf_core.base_converter.BaseConverter.get_supported_input_type)
+    * [get\_supported\_output\_type](#opencf_core.base_converter.BaseConverter.get_supported_output_type)
 
-<a id="convcore"></a>
+<a id="opencf_core"></a>
 
-# convcore
+# opencf_core
 
-<a id="convcore.logger"></a>
+<a id="opencf_core.logger"></a>
 
-# convcore.logger
+# opencf_core.logger
 
-<a id="convcore.logger.setup_logger"></a>
+<a id="opencf_core.logger.setup_logger"></a>
 
 #### setup\_logger
 
@@ -75,15 +75,15 @@ def setup_logger(log_file="logs/app.log")
 
 Setup logger configuration.
 
-<a id="convcore.converter_app"></a>
+<a id="opencf_core.converter_app"></a>
 
-# convcore.converter\_app
+# opencf_core.converter\_app
 
 Main Module
 
 This module contains the main application logic.
 
-<a id="convcore.converter_app.BaseConverterApp"></a>
+<a id="opencf_core.converter_app.BaseConverterApp"></a>
 
 ## BaseConverterApp Objects
 
@@ -93,7 +93,7 @@ class BaseConverterApp()
 
 Main application class responsible for managing file conversions.
 
-<a id="convcore.converter_app.BaseConverterApp.__init__"></a>
+<a id="opencf_core.converter_app.BaseConverterApp.__init__"></a>
 
 #### \_\_init\_\_
 
@@ -113,7 +113,7 @@ Initializes the BaseConverterApp instance.
 - `output_file_path` _str, optional_ - The path to the output file. Defaults to None.
 - `output_file_type` _FileType, optional_ - The type of the output file. Defaults to None.
 
-<a id="convcore.converter_app.BaseConverterApp.add_converter_pair"></a>
+<a id="opencf_core.converter_app.BaseConverterApp.add_converter_pair"></a>
 
 #### add\_converter\_pair
 
@@ -132,7 +132,7 @@ Adds a converter pair to the application.
 
 - `ValueError` - If the converter class is invalid.
 
-<a id="convcore.converter_app.BaseConverterApp.get_supported_conversions"></a>
+<a id="opencf_core.converter_app.BaseConverterApp.get_supported_conversions"></a>
 
 #### get\_supported\_conversions
 
@@ -146,7 +146,7 @@ Retrieves the supported conversions.
 
 - `Tuple[Tuple[FileType]]` - A tuple of tuples representing supported conversions.
 
-<a id="convcore.converter_app.BaseConverterApp.run"></a>
+<a id="opencf_core.converter_app.BaseConverterApp.run"></a>
 
 #### run
 
@@ -156,9 +156,9 @@ def run()
 
 Runs the conversion process.
 
-<a id="convcore.io_handler"></a>
+<a id="opencf_core.io_handler"></a>
 
-# convcore.io\_handler
+# opencf_core.io\_handler
 
 Input/Output Handler Module
 
@@ -167,7 +167,7 @@ formats such as plain text, CSV, JSON, and potentially XML. It introduces a set 
 implementations for reading from and writing to files, ensuring type safety and format consistency through method
 signatures and runtime checks.
 
-<a id="convcore.io_handler.FileReader"></a>
+<a id="opencf_core.io_handler.FileReader"></a>
 
 ## FileReader Objects
 
@@ -177,7 +177,7 @@ class FileReader(ABC)
 
 Abstract base class for file readers.
 
-<a id="convcore.io_handler.FileWriter"></a>
+<a id="opencf_core.io_handler.FileWriter"></a>
 
 ## FileWriter Objects
 
@@ -187,7 +187,7 @@ class FileWriter(ABC)
 
 Abstract base class for file writers.
 
-<a id="convcore.io_handler.SamePathReader"></a>
+<a id="opencf_core.io_handler.SamePathReader"></a>
 
 ## SamePathReader Objects
 
@@ -197,7 +197,7 @@ class SamePathReader(FileReader)
 
 A FileReader that returns the input path itself, useful for operations where the file path is the desired output.
 
-<a id="convcore.io_handler.TxtToStrReader"></a>
+<a id="opencf_core.io_handler.TxtToStrReader"></a>
 
 ## TxtToStrReader Objects
 
@@ -207,7 +207,7 @@ class TxtToStrReader(FileReader)
 
 Reads content from a text file and returns it as a string.
 
-<a id="convcore.io_handler.StrToTxtWriter"></a>
+<a id="opencf_core.io_handler.StrToTxtWriter"></a>
 
 ## StrToTxtWriter Objects
 
@@ -217,7 +217,7 @@ class StrToTxtWriter(FileWriter)
 
 Writes a string to a text file.
 
-<a id="convcore.io_handler.CsvToListReader"></a>
+<a id="opencf_core.io_handler.CsvToListReader"></a>
 
 ## CsvToListReader Objects
 
@@ -227,7 +227,7 @@ class CsvToListReader(FileReader)
 
 Reads content from a CSV file and returns it as a list of lists, where each sublist represents a row.
 
-<a id="convcore.io_handler.ListToCsvWriter"></a>
+<a id="opencf_core.io_handler.ListToCsvWriter"></a>
 
 ## ListToCsvWriter Objects
 
@@ -237,7 +237,7 @@ class ListToCsvWriter(FileWriter)
 
 Writes content as a list of lists to a CSV file, where each sublist represents a row.
 
-<a id="convcore.io_handler.JsonToDictReader"></a>
+<a id="opencf_core.io_handler.JsonToDictReader"></a>
 
 ## JsonToDictReader Objects
 
@@ -247,7 +247,7 @@ class JsonToDictReader(FileReader)
 
 Reads content from a JSON file and returns it as a dictionary.
 
-<a id="convcore.io_handler.DictToJsonWriter"></a>
+<a id="opencf_core.io_handler.DictToJsonWriter"></a>
 
 ## DictToJsonWriter Objects
 
@@ -257,7 +257,7 @@ class DictToJsonWriter(FileWriter)
 
 Writes content from a dictionary to a JSON file.
 
-<a id="convcore.io_handler.XmlToStrReader"></a>
+<a id="opencf_core.io_handler.XmlToStrReader"></a>
 
 ## XmlToStrReader Objects
 
@@ -267,7 +267,7 @@ class XmlToStrReader(FileReader)
 
 Reads content from an XML file and returns it as a string.
 
-<a id="convcore.io_handler.StrToXmlWriter"></a>
+<a id="opencf_core.io_handler.StrToXmlWriter"></a>
 
 ## StrToXmlWriter Objects
 
@@ -277,15 +277,15 @@ class StrToXmlWriter(FileWriter)
 
 Writes content as a string to an XML file.
 
-<a id="convcore.mimes"></a>
+<a id="opencf_core.mimes"></a>
 
-# convcore.mimes
+# opencf_core.mimes
 
 MIME Type Guesser Module
 
 This module provides a singleton class for guessing MIME types from file paths using the python-magic library.
 
-<a id="convcore.mimes.MimeGuesser"></a>
+<a id="opencf_core.mimes.MimeGuesser"></a>
 
 ## MimeGuesser Objects
 
@@ -295,7 +295,7 @@ class MimeGuesser()
 
 Singleton class for guessing MIME types from file paths using the python-magic library.
 
-<a id="convcore.mimes.MimeGuesser.__new__"></a>
+<a id="opencf_core.mimes.MimeGuesser.__new__"></a>
 
 #### \_\_new\_\_
 
@@ -309,7 +309,7 @@ Creates a new instance of the class if it doesn't exist already.
 
 - `MimeGuesser` - The instance of the MimeGuesser class.
 
-<a id="convcore.mimes.MimeGuesser.get_mime_guesser"></a>
+<a id="opencf_core.mimes.MimeGuesser.get_mime_guesser"></a>
 
 #### get\_mime\_guesser
 
@@ -323,7 +323,7 @@ Returns the mime_guesser instance.
 
 - `magic.Magic` - The instance of the mime_guesser.
 
-<a id="convcore.mimes.MimeGuesser.guess_mime_type_from_file"></a>
+<a id="opencf_core.mimes.MimeGuesser.guess_mime_type_from_file"></a>
 
 #### guess\_mime\_type\_from\_file
 
@@ -348,7 +348,7 @@ Guesses the MIME type from the file path.
 
 - `ImportError` - If the python-magic library is not imported.
 
-<a id="convcore.mimes.guess_mime_type_from_file"></a>
+<a id="opencf_core.mimes.guess_mime_type_from_file"></a>
 
 #### guess\_mime\_type\_from\_file
 
@@ -367,9 +367,9 @@ Guesses the MIME type from the file path.
 
 - `str` - The guessed MIME type.
 
-<a id="convcore.filetypes"></a>
+<a id="opencf_core.filetypes"></a>
 
-# convcore.filetypes
+# opencf_core.filetypes
 
 File Type Definitions Module
 
@@ -395,9 +395,9 @@ Dependencies:
 - collections.namedtuple: For defining simple classes for storing MIME type information.
 - enum.Enum: For creating the FileType enumeration.
 - pathlib.Path: For file path manipulations and checks.
-- convcore.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
+- opencf_core.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
 
-<a id="convcore.filetypes.UnsupportedFileTypeError"></a>
+<a id="opencf_core.filetypes.UnsupportedFileTypeError"></a>
 
 ## UnsupportedFileTypeError Objects
 
@@ -407,7 +407,7 @@ class UnsupportedFileTypeError(Exception)
 
 Exception raised for handling cases of unsupported file types.
 
-<a id="convcore.filetypes.EmptySuffixError"></a>
+<a id="opencf_core.filetypes.EmptySuffixError"></a>
 
 ## EmptySuffixError Objects
 
@@ -417,7 +417,7 @@ class EmptySuffixError(UnsupportedFileTypeError)
 
 Exception raised when a file's suffix does not provide enough information to determine its type.
 
-<a id="convcore.filetypes.FileNotFoundError"></a>
+<a id="opencf_core.filetypes.FileNotFoundError"></a>
 
 ## FileNotFoundError Objects
 
@@ -427,7 +427,7 @@ class FileNotFoundError(Exception)
 
 Exception raised when the specified file cannot be found.
 
-<a id="convcore.filetypes.MismatchedException"></a>
+<a id="opencf_core.filetypes.MismatchedException"></a>
 
 ## MismatchedException Objects
 
@@ -437,7 +437,7 @@ class MismatchedException(Exception)
 
 Exception raised for mismatches between expected and actual file attributes.
 
-<a id="convcore.filetypes.FileType"></a>
+<a id="opencf_core.filetypes.FileType"></a>
 
 ## FileType Objects
 
@@ -447,13 +447,13 @@ class FileType(Enum)
 
 Enumeration of supported file types with methods for type determination and validation.
 
-<a id="convcore.filetypes.FileType.TEXT"></a>
+<a id="opencf_core.filetypes.FileType.TEXT"></a>
 
 #### TEXT
 
 put it at bottom as many other filetypes may be marked as text/plain too
 
-<a id="convcore.filetypes.FileType.from_suffix"></a>
+<a id="opencf_core.filetypes.FileType.from_suffix"></a>
 
 #### from\_suffix
 
@@ -480,7 +480,7 @@ Determines a FileType from a file's suffix.
 - `EmptySuffixError` - If the suffix is empty and raise_err is True.
 - `UnsupportedFileTypeError` - If the file type is unhandled and raise_err is True.
 
-<a id="convcore.filetypes.FileType.from_mimetype"></a>
+<a id="opencf_core.filetypes.FileType.from_mimetype"></a>
 
 #### from\_mimetype
 
@@ -507,7 +507,7 @@ Determines a FileType from a file's MIME type.
 - `FileNotFoundError` - If the file does not exist.
 - `UnsupportedFileTypeError` - If the file type is unhandled and raise_err is True.
 
-<a id="convcore.filetypes.FileType.from_path"></a>
+<a id="opencf_core.filetypes.FileType.from_path"></a>
 
 #### from\_path
 
@@ -538,7 +538,7 @@ Determines the FileType of a file based on its path. Optionally reads the file's
 - `UnsupportedFileTypeError` - If the file type is unsupported and raise_err is True.
 - `AssertionError` - If there is a mismatch between the file type determined from the file's suffix and its content.
 
-<a id="convcore.filetypes.FileType.is_true_filetype"></a>
+<a id="opencf_core.filetypes.FileType.is_true_filetype"></a>
 
 #### is\_true\_filetype
 
@@ -552,7 +552,7 @@ Determines if the FileType instance represents a supported file type based on th
 
 - `bool` - True if the FileType has at least one associated file extension, False otherwise.
 
-<a id="convcore.filetypes.FileType.get_suffix"></a>
+<a id="opencf_core.filetypes.FileType.get_suffix"></a>
 
 #### get\_suffix
 
@@ -567,7 +567,7 @@ Retrieves the primary file extension associated with the FileType.
 - `str` - The primary file extension for the FileType, prefixed with a period.
   Returns an empty string if the FileType does not have an associated extension.
 
-<a id="convcore.filetypes.FileType.is_valid_suffix"></a>
+<a id="opencf_core.filetypes.FileType.is_valid_suffix"></a>
 
 #### is\_valid\_suffix
 
@@ -593,7 +593,7 @@ Validates whether a given file extension matches the FileType's expected extensi
 
 - `MismatchedException` - If the suffix does not match and raise_err is True.
 
-<a id="convcore.filetypes.FileType.is_valid_path"></a>
+<a id="opencf_core.filetypes.FileType.is_valid_path"></a>
 
 #### is\_valid\_path
 
@@ -622,7 +622,7 @@ Validates whether the file at a given path matches the FileType, optionally chec
 
 - `MismatchedException` - If the file's type does not match and raise_err is True.
 
-<a id="convcore.filetypes.FileType.is_valid_mime_type"></a>
+<a id="opencf_core.filetypes.FileType.is_valid_mime_type"></a>
 
 #### is\_valid\_mime\_type
 
@@ -654,7 +654,7 @@ FileType.TEXT, where a broader compatibility check is performed due to the gener
 - `MismatchedException` - If raise_err is True and the file's MIME type does not match the expected MIME types
   for this FileType instance, including detailed information about the mismatch.
 
-<a id="convcore.filetypes.test_file_type_parsing"></a>
+<a id="opencf_core.filetypes.test_file_type_parsing"></a>
 
 #### test\_file\_type\_parsing
 
@@ -664,7 +664,7 @@ def test_file_type_parsing()
 
 Tests for validating the functionality of file type parsing.
 
-<a id="convcore.filetypes.test_file_type_matching"></a>
+<a id="opencf_core.filetypes.test_file_type_matching"></a>
 
 #### test\_file\_type\_matching
 
@@ -674,9 +674,9 @@ def test_file_type_matching()
 
 Tests for validating the functionality of file type matching.
 
-<a id="convcore.base_converter"></a>
+<a id="opencf_core.base_converter"></a>
 
-# convcore.base\_converter
+# opencf_core.base\_converter
 
 Base Converter Module
 
@@ -693,7 +693,7 @@ Exceptions:
 - ValueError: Raised when file paths or types are incompatible or unsupported.
 - AssertionError: Ensured for internal consistency checks, confirming that file types match expected values.
 
-<a id="convcore.base_converter.ResolvedInputFile"></a>
+<a id="opencf_core.base_converter.ResolvedInputFile"></a>
 
 ## ResolvedInputFile Objects
 
@@ -703,7 +703,7 @@ class ResolvedInputFile()
 
 Handles resolving the file type of a given file or folder, managing path adjustments and optional content reading.
 
-<a id="convcore.base_converter.ResolvedInputFile.__init__"></a>
+<a id="opencf_core.base_converter.ResolvedInputFile.__init__"></a>
 
 #### \_\_init\_\_
 
@@ -727,7 +727,7 @@ Initializes an instance of ResolvedInputFile with options for type resolution an
 - `add_suffix` _bool, optional_ - Whether to append the resolved file type's suffix to the file path. Defaults to False.
 - `read_content` _bool, optional_ - Whether to read the file's content to assist in type resolution. Defaults to False.
 
-<a id="convcore.base_converter.ResolvedInputFile.__resolve_filetype__"></a>
+<a id="opencf_core.base_converter.ResolvedInputFile.__resolve_filetype__"></a>
 
 #### \_\_resolve\_filetype\_\_
 
@@ -749,7 +749,7 @@ Determines the file type, utilizing the provided type, file path, or content as 
 
 - `FileType` - The resolved file type.
 
-<a id="convcore.base_converter.ResolvedInputFile.__str__"></a>
+<a id="opencf_core.base_converter.ResolvedInputFile.__str__"></a>
 
 #### \_\_str\_\_
 
@@ -763,7 +763,7 @@ Returns the absolute file path as a string.
 
 - `str` - The resolved file path.
 
-<a id="convcore.base_converter.ResolvedInputFile.__repr__"></a>
+<a id="opencf_core.base_converter.ResolvedInputFile.__repr__"></a>
 
 #### \_\_repr\_\_
 
@@ -777,7 +777,7 @@ Returns the absolute file path as a string.
 
 - `str` - The resolved file path.
 
-<a id="convcore.base_converter.BaseConverter"></a>
+<a id="opencf_core.base_converter.BaseConverter"></a>
 
 ## BaseConverter Objects
 
@@ -787,7 +787,7 @@ class BaseConverter(ABC)
 
 Abstract base class for file conversion, defining the template for input to output file conversion.
 
-<a id="convcore.base_converter.BaseConverter.__init__"></a>
+<a id="opencf_core.base_converter.BaseConverter.__init__"></a>
 
 #### \_\_init\_\_
 
@@ -803,7 +803,7 @@ Sets up the converter with specified input and output files, ensuring compatibil
 - `input_files` _Union[ResolvedInputFile, List[ResolvedInputFile]]_ - Either a single input file or a list of input files with resolved types.
 - `output_file` _ResolvedInputFile_ - The output file where the converted data will be saved.
 
-<a id="convcore.base_converter.BaseConverter.convert"></a>
+<a id="opencf_core.base_converter.BaseConverter.convert"></a>
 
 #### convert
 
@@ -813,7 +813,7 @@ def convert()
 
 Orchestrates the file conversion process, including reading, converting, and writing the file.
 
-<a id="convcore.base_converter.BaseConverter.check_io_handlers"></a>
+<a id="opencf_core.base_converter.BaseConverter.check_io_handlers"></a>
 
 #### check\_io\_handlers
 
@@ -823,7 +823,7 @@ def check_io_handlers()
 
 Ensures that valid I/O handlers (file reader and writer) are set for the conversion.
 
-<a id="convcore.base_converter.BaseConverter.get_supported_input_type"></a>
+<a id="opencf_core.base_converter.BaseConverter.get_supported_input_type"></a>
 
 #### get\_supported\_input\_type
 
@@ -838,7 +838,7 @@ Defines the supported input file type for this converter.
 
 - `FileType` - The file type supported for input.
 
-<a id="convcore.base_converter.BaseConverter.get_supported_output_type"></a>
+<a id="opencf_core.base_converter.BaseConverter.get_supported_output_type"></a>
 
 #### get\_supported\_output\_type
 

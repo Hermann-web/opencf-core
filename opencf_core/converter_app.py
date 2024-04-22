@@ -5,7 +5,7 @@ This module contains the main application logic.
 """
 
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type
 
 from .base_converter import BaseConverter, ResolvedInputFile
 from .filetypes import FileType

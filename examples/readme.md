@@ -44,7 +44,7 @@ When you can set a folder as output_path then a filetype, the folder would be cr
             output_file.write_text(md_content)
     ```
 
-For example, the script below will save the file `examples/output/fileconv-output.md`
+For example, the script below will save the file `examples/output/opencf-output.md`
 
 ```bash
 find examples/data -type f -name "*.txt" | xargs python examples/cli_app_example.py -o examples/output -ot md

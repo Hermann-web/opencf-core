@@ -17,7 +17,7 @@ Exceptions:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 from .filetypes import EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
@@ -321,7 +321,7 @@ class BaseConverter(ABC):
         else:
             if output_path.is_dir():
                 suffix = self.get_supported_output_type().get_suffix()
-                output_path = (output_path / "fileconv-output").with_suffix(suffix)
+                output_path = (output_path / "opencf-output").with_suffix(suffix)
             kwargs["output_file"] = output_path
         return kwargs, output_path
 
@@ -428,7 +428,10 @@ class BaseConverter(ABC):
 
     @abstractmethod
     def _convert(
-        self, input_contents: List, output_file: Optional[Path] = None, output_folder: Optional[Path] = None
+        self,
+        input_contents: List,
+        output_file: Optional[Path] = None,
+        output_folder: Optional[Path] = None,
     ):
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.

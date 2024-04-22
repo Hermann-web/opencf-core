@@ -5,9 +5,9 @@ import pandas as pd
 
 sys.path.append(".")
 
-from convcore.base_converter import BaseConverter, ResolvedInputFile
-from convcore.filetypes import FileType
-from convcore.io_handler import FileReader, ListToCsvWriter
+from opencf_core.base_converter import BaseConverter, ResolvedInputFile
+from opencf_core.filetypes import FileType
+from opencf_core.io_handler import FileReader, ListToCsvWriter
 
 
 class SpreadsheetToPandasReader(FileReader):

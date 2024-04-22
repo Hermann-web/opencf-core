@@ -1,4 +1,4 @@
-MODULE=./convcore
+MODULE=./opencf_core
 
 echo "-> running isort ..."
 poetry run isort $MODULE
@@ -10,7 +10,7 @@ poetry run black $MODULE
 # pylint $MODULE
 
 echo "-> running mypy exluding None problems..."
-poetry run mypy convcore/ | grep -v "None"
+poetry run mypy opencf_core/ | grep -v "None"
 
 echo "-> running flake8 ..."
 poetry run flake8 $MODULE

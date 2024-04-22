@@ -26,7 +26,7 @@ poetry export -f requirements.txt --output $DOCS_DIR/requirements.txt --without-
 
 # setup docs files and activate env
 echo "-> setup docs files ..."
-poetry run sphinx-apidoc $PROJECT_DIR/convcore/ -o $DOCS_DIR/source/convcore/ -f -E
+poetry run sphinx-apidoc $PROJECT_DIR/opencf_core/ -o $DOCS_DIR/source/opencf_core/ -f -E
 PYTHON_PATH="$(poetry env info --path)"
 source "$PYTHON_PATH/bin/activate"
 

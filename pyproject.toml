@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "openconv-core"
+name = "opencf-core"
 packages = [
-    {include = "convcore"}
+    {include = "opencf_core"}
 ]
-version = "0.1.5"
+version = "0.2.0"
 description = "A robust framework for handling file conversion tasks in Python"
 authors = ["Hermann Agossou <agossouhermann7@gmail.com>"]
 readme = "README.md"
@@ -11,9 +11,9 @@ maintainers = [
     "Hermann Agossou <agossouhermann7@gmail.com>"
 ]
 license = "MIT"
-homepage = "https://hermann-web.github.io/blog/projects/introducing-two-new-packages-for-streamlining-file-conversions-in-python/"
-repository = "https://github.com/Hermann-web/file-converter"
-documentation = "https://github.com/Hermann-web/file-converter/blob/main/openconv-core/docs/index.md"
+homepage = "https://github.com/Hermann-web/opencf-core"
+repository = "https://github.com/Hermann-web/opencf-core"
+documentation = "https://opencf-core.readthedocs.io"
 keywords = ["file conversion", "data processing", "file formats"]
 classifiers = [
     "Development Status :: 4 - Beta",

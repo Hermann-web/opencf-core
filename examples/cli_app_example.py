@@ -11,7 +11,7 @@ from simple_converter import TXTToMDConverter, TXTToTXTConverter
 
 sys.path.append(".")
 
-from convcore.converter_app import BaseConverterApp
+from opencf_core.converter_app import BaseConverterApp
 
 
 class ConverterApp(BaseConverterApp):

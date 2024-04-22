@@ -1,9 +1,9 @@
-.. openconv-core documentation master file, created by
+.. opencf-core documentation master file, created by
    sphinx-quickstart on Fri Apr 19 11:53:48 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to openconv-core's documentation!
+Welcome to opencf-core's documentation!
 =========================================
 
 .. toctree::
@@ -11,7 +11,7 @@ Welcome to openconv-core's documentation!
    :caption: Contents:
 
    readme
-   convcore/modules.rst
+   opencf_core/modules.rst
 
 Indices and tables
 ==================

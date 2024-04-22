@@ -4,9 +4,9 @@ from typing import List
 
 sys.path.append(".")
 
-from convcore.base_converter import BaseConverter, ResolvedInputFile
-from convcore.filetypes import FileType
-from convcore.io_handler import FileReader, StrToTxtWriter, TxtToStrReader
+from opencf_core.base_converter import BaseConverter, ResolvedInputFile
+from opencf_core.filetypes import FileType
+from opencf_core.io_handler import FileReader, StrToTxtWriter, TxtToStrReader
 
 
 class TXTToMDConverter(BaseConverter):

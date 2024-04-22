@@ -23,7 +23,7 @@ Dependencies:
 - collections.namedtuple: For defining simple classes for storing MIME type information.
 - enum.Enum: For creating the FileType enumeration.
 - pathlib.Path: For file path manipulations and checks.
-- convcore.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
+- opencf_core.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
 """
 
 from collections import namedtuple
