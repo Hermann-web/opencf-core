@@ -24,7 +24,6 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-loguru = "^0.7.2"
 python-magic = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]

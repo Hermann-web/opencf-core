@@ -21,7 +21,7 @@ from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from .filetypes import EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
-from .logger import logger
+from .logging_config import logger
 
 
 class ResolvedInputFile:

@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple, Type
 
 from .base_converter import BaseConverter, ResolvedInputFile
 from .filetypes import FileType
-from .logger import logger
+from .logging_config import logger
 
 
 class BaseConverterApp:
