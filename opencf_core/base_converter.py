@@ -266,7 +266,7 @@ class BaseConverter(ABC):
 
         # log
         logger.debug(
-            f"Converting {self.input_files[0].path.name} and {len(self.input_files)-1} more ({self.get_supported_input_type()}) to {self.output_file.path.name} ({self.get_supported_output_type()})..."
+            f"Converting {self.input_files[0].path.name} and {len(self.input_files)-1} more ({self.get_supported_input_types()}) to {self.output_file.path.name} ({self.get_supported_output_types()})..."
         )
         logger.debug(f"Input files ({len(self.input_files)}): {self.input_files}")
 
@@ -321,9 +321,12 @@ class BaseConverter(ABC):
             ), f"output_path {output_path} is not a dir while a folder is required for this conversion"
             kwargs["output_folder"] = output_path
         else:
-            if output_path.is_dir():
-                suffix = self.get_supported_output_type().get_suffix()
-                output_path = (output_path / "opencf-output").with_suffix(suffix)
+            assert (
+                not output_path.is_dir()
+            ), f"output_path {output_path} exists as a dir while a file is required for this conversion"
+            # if output_path.is_dir():
+            #     suffix = self.get_supported_output_types().get_suffix()
+            #     output_path = (output_path / "opencf-output").with_suffix(suffix)
             kwargs["output_file"] = output_path
         return kwargs, output_path
 
@@ -336,18 +339,18 @@ class BaseConverter(ABC):
                 raise ValueError(
                     f"Invalid input file. Expected: {ResolvedInputFile}. Actual: {type(input_file)}"
                 )
-            if input_file.file_type != self.get_supported_input_type():
+            if input_file.file_type not in self.get_supported_input_types():
                 raise ValueError(
-                    f"Unsupported input file type. Expected: {self.get_supported_input_type()}, Actual: {input_file.file_type}"
+                    f"Unsupported input file type. Expected one of the followings: {self.get_supported_input_types()}, Actual: {input_file.file_type}"
                 )
 
         if not isinstance(self.output_file, ResolvedInputFile):
             raise ValueError(
                 f"Invalid output file. Expected: {ResolvedInputFile}. Actual: {type(self.output_file)}"
             )
-        if self.output_file.file_type != self.get_supported_output_type():
+        if self.output_file.file_type not in self.get_supported_output_types():
             raise ValueError(
-                f"Unsupported output file type. Expected: {self.get_supported_output_type()}, Actual: {self.output_file.file_type}"
+                f"Unsupported output file type. Expected one of the followings: {self.get_supported_output_types()}, Actual: {self.output_file.file_type}"
             )
 
     def check_io_handlers(self):
@@ -373,58 +376,74 @@ class BaseConverter(ABC):
         self.folder_as_output = False
 
     @classmethod
-    def get_input_type(cls):
-        return cls.get_supported_input_type()
+    def get_input_types(cls):
+        return cls.get_supported_input_types()
 
     @classmethod
-    def get_output_type(cls):
-        return cls.get_supported_output_type()
+    def get_output_types(cls):
+        return cls.get_supported_output_types()
 
     @classmethod
-    def get_supported_input_type(cls) -> FileType:
+    def get_supported_input_types(cls) -> Tuple[FileType, ...]:
         """
-        Defines the supported input file type for this converter.
+        Defines the supported input file types for this converter.
 
         Returns:
-            FileType: The file type supported for input.
+            Tuple[FileType]: The file types supported for input.
         """
-        input_type = cls._get_supported_input_type()
-        if not isinstance(input_type, FileType):
+        input_types = cls._get_supported_input_types()
+
+        # Check if input_types is a single FileType instance
+        if isinstance(input_types, FileType):
+            return (input_types,)  # Convert single instance to tuple
+
+        # Check if input_types is an iterable of FileType instances
+        input_types = tuple(input_types)
+        if not all(isinstance(input_type, FileType) for input_type in input_types):
             raise ValueError("Invalid supported input file type")
-        return input_type
+
+        return input_types
 
     @classmethod
-    def get_supported_output_type(cls) -> FileType:
+    def get_supported_output_types(cls) -> Tuple[FileType, ...]:
         """
-        Defines the supported output file type for this converter.
+        Defines the supported output file types for this converter.
 
         Returns:
-            FileType: The file type supported for output.
+            Tuple[FileType]: The file types supported for output.
         """
-        output_type = cls._get_supported_output_type()
-        if not isinstance(output_type, FileType):
+        output_types = cls._get_supported_output_types()
+
+        # Check if output_types is a single FileType instance
+        if isinstance(output_types, FileType):
+            return (output_types,)  # Convert single instance to tuple
+
+        # Check if output_types is an iterable of FileType instances
+        output_types = tuple(output_types)
+        if not all(isinstance(output_type, FileType) for output_type in output_types):
             raise ValueError("Invalid supported output file type")
-        return output_type
+
+        return output_types
 
     @classmethod
     @abstractmethod
-    def _get_supported_input_type(cls) -> FileType:
+    def _get_supported_input_types(cls) -> Iterable[FileType]:
         """
-        Abstract method to define the supported input file type by the converter.
+        Abstract method to define the supported input file types by the converter.
 
         Returns:
-            FileType: The supported input file type.
+            Iterable[FileType]: The supported input file type.
         """
         pass
 
     @classmethod
     @abstractmethod
-    def _get_supported_output_type(cls) -> FileType:
+    def _get_supported_output_types(cls) -> Iterable[FileType]:
         """
-        Abstract method to define the supported output file type by the converter.
+        Abstract method to define the supported output file types by the converter.
 
         Returns:
-            FileType: The supported output file type.
+            Iterable[FileType]: The supported output file type.
         """
         pass
 

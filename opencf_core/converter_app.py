@@ -4,6 +4,8 @@ Main Module
 This module contains the main application logic.
 """
 
+from collections import defaultdict
+from itertools import product
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
@@ -35,7 +37,9 @@ class BaseConverterApp:
             output_file_path (str, optional): The path to the output file. Defaults to None.
             output_file_type (FileType, optional): The type of the output file. Defaults to None.
         """
-        self._dict_converters: Dict[Tuple[FileType, FileType], Type[BaseConverter]] = {}
+        self._converter_map: Dict[
+            Tuple[FileType, FileType], List[Type[BaseConverter]]
+        ] = defaultdict(list)
 
         if not isinstance(input_file_paths, list):
             raise TypeError("input_file_paths sould be a list")
@@ -79,7 +83,7 @@ class BaseConverterApp:
         for _conv_class in self.converters:
             self.add_converter_pair(_conv_class)
 
-    def add_converter_pair(self, converter_class: Type[BaseConverter]):
+    def add_converter_pair(self, converter_class):
         """
         Adds a converter pair to the application.
 
@@ -91,12 +95,32 @@ class BaseConverterApp:
         """
         # Check if the converter_class is a subclass of BaseConverter
         if not issubclass(converter_class, BaseConverter):
-            raise ValueError("Invalid converter class")
+            raise ValueError(
+                "Invalid converter class. Must be a subclass of BaseConverter."
+            )
 
-        # Add the converter pair to the converters dictionary
-        self._dict_converters[
-            (converter_class.get_input_type(), converter_class.get_output_type())
-        ] = converter_class
+        # Extract supported input and output types from the converter class
+        input_types = converter_class.get_input_types()
+        output_types = converter_class.get_output_types()
+
+        # Add the converter pair to the converter map
+        for input_type, output_type in product(input_types, output_types):
+            self._converter_map[(input_type, output_type)].append(converter_class)
+
+    def get_converters_for_conversion(
+        self, input_type: FileType, output_type: FileType
+    ) -> List[Type[BaseConverter]]:
+        """
+        Returns a list of converter classes for a given input-output type pair.
+
+        Args:
+            input_type (str): The input type.
+            output_type (str): The output type.
+
+        Returns:
+            List[Type[BaseConverter]]: List of converter classes if found, else an empty list.
+        """
+        return self._converter_map[(input_type, output_type)]
 
     def get_supported_conversions(self) -> Tuple[Tuple[FileType, FileType], ...]:
         """
@@ -105,19 +129,19 @@ class BaseConverterApp:
         Returns:
             Tuple[Tuple[FileType, FileType]]: A tuple of tuples representing supported conversions.
         """
-        return tuple(self._dict_converters.keys())
+        return tuple(self._converter_map.keys())
 
     def run(self):
         """
         Runs the conversion process.
         """
         # get converter class
-        converter_class = self._dict_converters.get(
-            (self.input_file_type, self.output_file_type)
+        converter_classes = self.get_converters_for_conversion(
+            self.input_file_type, self.output_file_type
         )
 
         # make sure a converter class exists
-        if converter_class is None:
+        if converter_classes is None:
             _ = "\n " + "\n ".join(
                 map(lambda x: f"* {x[0]} -> {x[1]}", self.get_supported_conversions())
             )
@@ -126,8 +150,26 @@ class BaseConverterApp:
             )
             return
 
-        # instanciate the converter
-        converter = converter_class(self.input_files, self.output_file)
+        # Initialize a flag to track if any converter succeeded
+        conversion_successful = False
 
-        # run the convertion pipeline
-        converter.convert()
+        # Try each converter class until one succeeds
+        for converter_class in converter_classes:
+            try:
+                # Instantiate the converter
+                converter = converter_class(self.input_files, self.output_file)
+
+                # Run the conversion pipeline
+                converter.convert()
+
+                # Set the flag to indicate success
+                conversion_successful = True
+
+                # Break the loop if conversion succeeds
+                break
+            except Exception as e:
+                logger.error(f"Conversion with {converter_class.__name__} failed: {e}")
+
+        # If none of the converter classes succeeded, log an error
+        if not conversion_successful:
+            logger.error("All conversion attempts failed.")

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 
@@ -26,14 +27,17 @@ class XLXSToCSVConverter(BaseConverter):
     file_writer = ListToCsvWriter()
 
     @classmethod
-    def _get_supported_input_type(cls) -> FileType:
+    def _get_supported_input_types(cls) -> FileType:
         return FileType.EXCEL
 
     @classmethod
-    def _get_supported_output_type(cls) -> FileType:
+    def _get_supported_output_types(cls) -> FileType:
         return FileType.CSV
 
-    def _convert(self, df: pd.DataFrame):
+    def _convert(self, input_contents: List[pd.DataFrame]):
+
+        df = input_contents[0]
+        
         # Convert DataFrame to a list of lists
         data_as_list = df.values.tolist()
 
