@@ -19,7 +19,7 @@ class FileReader(ABC):
     Abstract base class for file readers.
     """
 
-    input_format: type = None
+    # input_format: type = None
 
     @abstractmethod
     def _check_input_format(self, content: Any) -> bool:
@@ -53,7 +53,7 @@ class FileWriter(ABC):
     Abstract base class for file writers.
     """
 
-    output_format = None
+    # output_format = None
 
     @abstractmethod
     def _check_output_format(self, content: Any) -> bool:

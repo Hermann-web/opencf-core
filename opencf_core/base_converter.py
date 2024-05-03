@@ -17,7 +17,7 @@ Exceptions:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from .filetypes import EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
@@ -131,7 +131,9 @@ class ResolvedInputFile:
         suffix = resolved_file_type.get_suffix()
         return resolved_file_type, suffix
 
-    def _resolve_file_type(self, file_type: str, read_content: bool, add_suffix: bool):
+    def _resolve_file_type(
+        self, file_type: Optional[str], read_content: bool, add_suffix: bool
+    ):
         """
         Resolves the file type based on given parameters.
 
@@ -155,7 +157,7 @@ class ResolvedInputFile:
         return resolved_file_type, suffix
 
     def __resolve_filetype__(
-        self, file_type: str, file_path: Path, read_content: bool
+        self, file_type: Optional[str], file_path: Path, read_content: bool
     ) -> FileType:
         """
         Determines the file type, utilizing the provided type, file path, or content as needed.
@@ -224,9 +226,9 @@ class BaseConverter(ABC):
     Abstract base class for file conversion, defining the template for input to output file conversion.
     """
 
-    file_reader: FileReader = None
-    file_writer: FileWriter = None
-    folder_as_output: bool = None
+    file_reader: Optional[FileReader] = None
+    file_writer: Optional[FileWriter] = None
+    folder_as_output: Optional[bool] = None
 
     def __init__(
         self,
@@ -432,7 +434,7 @@ class BaseConverter(ABC):
         input_contents: List,
         output_file: Optional[Path] = None,
         output_folder: Optional[Path] = None,
-    ):
+    ) -> Any:
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.
         """
@@ -445,6 +447,7 @@ class BaseConverter(ABC):
         return "\n".join(f"{i+1}. {elt}" for i, elt in enumerate(_solving_tips))
 
     def _read_content(self, input_path: Path):
+        assert self.file_reader is not None
         return self.file_reader._read_content(input_path)
 
     def _check_input_format(self, input_content):
@@ -454,4 +457,5 @@ class BaseConverter(ABC):
         return self.file_writer._check_output_format(output_content)
 
     def _write_content(self, output_path: Path, output_content):
+        assert self.file_writer is not None
         return self.file_writer._write_content(output_path, output_content)
