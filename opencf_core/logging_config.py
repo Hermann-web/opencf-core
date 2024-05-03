@@ -4,6 +4,34 @@ from datetime import datetime
 from typing import Optional
 
 
+class ColoredFormatter(logging.Formatter):
+    """
+    - original code from [Sergey Pleshakov, stackoverflow](https://stackoverflow.com/a/56944256/16668046)
+    """
+
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    log_format = (
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    )
+
+    FORMATS = {
+        logging.DEBUG: grey + log_format + reset,
+        logging.INFO: grey + log_format + reset,
+        logging.WARNING: yellow + log_format + reset,
+        logging.ERROR: red + log_format + reset,
+        logging.CRITICAL: bold_red + log_format + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
 class LoggerConfig:
     def __init__(self) -> None:
         self.logger: logging.Logger = logging.Logger("_")
@@ -23,9 +51,7 @@ class LoggerConfig:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
 
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = ColoredFormatter()
 
         # Remove existing handlers
         for handler in self.logger.handlers[:]:
@@ -77,7 +103,7 @@ class LoggerConfig:
 logger_config: LoggerConfig = LoggerConfig()
 
 # Set up logger with default log file location and level
-logger_config.setup_logger("openconv-core", log_file="default", level=logging.DEBUG)
+logger_config.setup_logger("openconv-core", log_file="default", level=logging.INFO)
 
 # Define the logger to log messages
 logger: logging.Logger = logger_config.logger
