@@ -434,7 +434,9 @@ class BaseConverter(ABC):
         Returns:
             Iterable[FileType]: The supported input file type.
         """
-        pass
+        raise NotImplementedError(
+            f"{cls.__name__}._get_supported_input_typess() must be implemented by subclasses."
+        )
 
     @classmethod
     @abstractmethod
@@ -445,7 +447,9 @@ class BaseConverter(ABC):
         Returns:
             Iterable[FileType]: The supported output file type.
         """
-        pass
+        raise NotImplementedError(
+            f"{cls.__name__}._get_supported_output_typess() must be implemented by subclasses."
+        )
 
     @abstractmethod
     def _convert(

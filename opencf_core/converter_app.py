@@ -156,6 +156,8 @@ class BaseConverterApp:
         # Try each converter class until one succeeds
         for converter_class in converter_classes:
             try:
+                logger.info(f"Atempting conversion with {converter_class.__name__}")
+
                 # Instantiate the converter
                 converter = converter_class(self.input_files, self.output_file)
 

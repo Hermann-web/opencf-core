@@ -29,7 +29,7 @@ Submodules
    :show-inheritance:
 
 
-.. automodule:: opencf_core.logger
+.. automodule:: opencf_core.logging_config
    :members:
    :undoc-members:
    :show-inheritance:
