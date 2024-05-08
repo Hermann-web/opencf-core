@@ -1,6 +1,6 @@
 import logging
-import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 
@@ -75,11 +75,13 @@ class LoggerConfig:
         if log_file == "default":
             # Save log file in user's home directory with a timestamp
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            user_home = os.path.expanduser("~")
-            self.log_file = os.path.join(user_home, f"openconv-core_{timestamp}.log")
+            log_directory = Path.home() / ".cache" / "openconv-core"
+            # Create directory if it doesn't exist
+            log_directory.mkdir(parents=True, exist_ok=True)
+            self.log_file = log_directory / f"{timestamp}.log"
         else:
             # Use the provided log file path
-            self.log_file = os.path.expanduser(log_file)
+            self.log_file = Path(log_file).expanduser()
 
         file_handler = logging.FileHandler(self.log_file)
         formatter = logging.Formatter(

@@ -10,7 +10,7 @@ poetry run black $MODULE
 # pylint $MODULE
 
 echo "-> running mypy exluding None problems..."
-poetry run mypy opencf_core/ | grep -v "None"
+poetry run mypy $MODULE | grep -v "None"
 
 echo "-> running flake8 ..."
 poetry run flake8 $MODULE
