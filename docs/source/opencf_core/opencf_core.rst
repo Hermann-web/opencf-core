@@ -17,6 +17,12 @@ Submodules
    :show-inheritance:
 
 
+.. automodule:: opencf_core.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: opencf_core.filetypes
    :members:
    :undoc-members:
@@ -36,6 +42,12 @@ Submodules
 
 
 .. automodule:: opencf_core.mimes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. automodule:: opencf_core.utils
    :members:
    :undoc-members:
    :show-inheritance:
