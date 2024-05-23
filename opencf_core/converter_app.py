@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
 from .base_converter import BaseConverter, ResolvedInputFile
-from .filetypes import BaseBaseFileType, BaseFileType
+from .filetypes import BaseFileType, FileType
 from .logging_config import logger
 
 
@@ -20,7 +20,7 @@ class BaseConverterApp:
     """
 
     converters: List[Type[BaseConverter]] = []
-    filetype_class: Type[BaseBaseFileType] = BaseFileType
+    filetype_class: Type[BaseFileType] = FileType
 
     def __init__(
         self,

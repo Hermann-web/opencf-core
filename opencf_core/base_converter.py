@@ -20,7 +20,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple, Type, Union
 
-from .filetypes import BaseBaseFileType, BaseFileType, EmptySuffixError
+from .filetypes import BaseFileType, EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
 from .logging_config import logger
 
@@ -38,7 +38,7 @@ class ResolvedInputFile:
         file_type: Optional[str] = None,
         add_suffix: bool = False,
         read_content: bool = False,
-        filetype_class: Optional[Type[BaseBaseFileType]] = BaseFileType,
+        filetype_class: Optional[Type[BaseFileType]] = FileType,
     ):
         """
         Initializes an instance of ResolvedInputFile with options for type resolution and path modification.
@@ -55,7 +55,7 @@ class ResolvedInputFile:
         self.path = Path(path)
 
         if filetype_class is None:
-            filetype_class = BaseFileType
+            filetype_class = FileType
         assert issubclass(filetype_class, Enum)
         self.filetype_class = filetype_class
 

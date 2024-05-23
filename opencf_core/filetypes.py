@@ -26,18 +26,17 @@ Dependencies:
 - opencf_core.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
 """
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Callable, Tuple, Type, Union
+from typing import Callable, Dict, Iterable, Tuple, Type, Union
 
 from opencf_core.exceptions import (
     EmptySuffixError,
     MismatchedException,
     UnsupportedFileTypeError,
 )
-from opencf_core.utils import ensure_iterable
 
 from .mimes import guess_mime_type_from_file
 
@@ -50,12 +49,12 @@ class MimeType:
     upper_mime_types: Tuple[str, ...] = ()
 
 
-class BaseBaseFileType(ABC, EnumMeta):
-    value: MimeType = MimeType()
-
-    NOTYPE = MimeType()
+class BaseFileType(ABCMeta, EnumMeta):  # type:ignore
+    NOTYPE: MimeType = MimeType()
     TEXT = MimeType(("txt",), ("text/plain",))
-    UNHANDLED = MimeType()
+    UNHANDLED: MimeType = MimeType()
+
+    __filetype_members__ = {"NOTYPE": NOTYPE, "TEXT": TEXT, "UNHANDLED": UNHANDLED}
 
     @abstractmethod
     def get_value(self) -> MimeType:
@@ -73,10 +72,19 @@ class BaseBaseFileType(ABC, EnumMeta):
     def from_suffix(cls, suffix: str, raise_err: bool = False):
         pass
 
+    @abstractmethod
+    def is_true_filetype(self) -> bool:
+        pass
 
-class BaseFileType(BaseBaseFileType):
+    @abstractmethod
+    def get_suffix(self) -> str:
+        pass
+
+
+class FileTypeMethods(BaseFileType):
     def get_value(self) -> MimeType:
-        return self.value
+        # self.value is defined for Enum subclass instances
+        return self.value  # type:ignore
 
     @classmethod
     def get_filetypes(cls):
@@ -216,7 +224,7 @@ class BaseFileType(BaseBaseFileType):
 
         return member1
 
-    def is_true_filetype(self):
+    def is_true_filetype(self) -> bool:
         """
         Determines if the filetype instance represents a supported file type based on the presence of defined extensions.
 
@@ -225,7 +233,7 @@ class BaseFileType(BaseBaseFileType):
         """
         return len(self.get_value().extensions) != 0
 
-    def get_suffix(self):
+    def get_suffix(self) -> str:
         """
         Retrieves the primary file extension associated with the filetype.
 
@@ -322,24 +330,37 @@ class BaseFileType(BaseBaseFileType):
         return is_valid
 
 
+def dd(cls: Type):
+    joined: Dict[str, MimeType] = {}
+    items: Iterable
+
+    # Copy values from the inherited enum
+    if issubclass(cls, Enum):
+        items = ((item.name, item.value) for item in cls)
+    else:
+        assert hasattr(cls, "__filetype_members__")
+        filetype_members: Dict[str, MimeType] = cls.__filetype_members__
+        assert isinstance(filetype_members, dict)
+        items = filetype_members.items()
+
+    # Copy values from the added enum
+    for item_name, item_value in items:
+        # Make sure the value is of the inherited enum type
+        assert isinstance(item_value, MimeType)
+        joined[item_name] = item_value
+
+    return joined
+
+
 def extend_filetype_enum(
-    inherited_enum: Type[Enum],
-) -> Callable[[Type[Enum]], Type[Enum]]:
-    def wrapper(added_enum: Type[Enum]) -> Type[Enum]:
+    inherited_enum: Union[Type[Enum], Type[BaseFileType]],
+) -> Callable[[Union[Type[Enum], Type[BaseFileType]]], Type[Enum]]:
+    def wrapper(added_enum: Union[Type[Enum], Type[BaseFileType]]) -> Type[Enum]:
         # Create a dictionary to hold the merged enum values
         joined = {}
 
-        # Copy values from the inherited enum
-        for item in ensure_iterable(inherited_enum, raise_err=False):
-            # Make sure the value is of the inherited enum type
-            assert isinstance(item.value, MimeType)
-            joined[item.name] = item.value
-
-        # Copy values from the added enum
-        for item in ensure_iterable(added_enum, raise_err=False):
-            # Make sure the value is of the inherited enum type
-            assert isinstance(item.value, MimeType)
-            joined[item.name] = item.value
+        joined.update(dd(inherited_enum))
+        joined.update(dd(added_enum))
 
         # Create a new Enum class with the merged values$
         new_enum = Enum(added_enum.__name__, joined)  # type: ignore
@@ -361,15 +382,8 @@ def extend_filetype_enum(
     return wrapper
 
 
-class FileTypeEnum(Enum):
+class FileTypeExamples(Enum):
     """Enumeration of supported file types with methods for type determination and validation."""
-
-    # Enum members defined with their respective MIME type information
-
-    NOTYPE = MimeType()
-    # put it at bottom as many other filetypes may be marked as text/plain too
-    TEXT = MimeType(("txt",), ("text/plain",))
-    UNHANDLED = MimeType()
 
     CSV = MimeType(("csv",), ("text/csv",), ("text/plain",))
     MARKDOWN = MimeType(("md",), ("text/markdown",), ("text/plain",))
@@ -395,11 +409,14 @@ class FileTypeEnum(Enum):
     VIDEO = MimeType(("mp4", "avi"), ("video/mp4", "video/x-msvideo"))
     XML = MimeType(("xml",), ("application/xml", "text/xml"))
 
-    # def get_value(self) -> MimeType:
-    #     return self.value
 
-
-@extend_filetype_enum(FileTypeEnum)
-@extend_filetype_enum(BaseFileType)
-class FileType(Enum):
+# add an enum that contains members
+# it does need to be an enum but it is easier to define members in a Enum subclass
+# than using __filetype_members__ to list predifined mimetypes
+@extend_filetype_enum(FileTypeExamples)
+# add an subclass of BaseFileType that implements methods i use in other modules,
+# on instances of mixin(FileTypeExamples, FileTypeMethods) (like FileType)
+@extend_filetype_enum(FileTypeMethods)
+class FileType(FileTypeMethods):
+    # __filetype_members__: Dict[str, MimeType] = {}
     pass
