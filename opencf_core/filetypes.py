@@ -12,143 +12,125 @@ Classes:
                     to determine its type.
 - FileNotFoundError: Raised when a specified file does not exist.
 - MismatchedException: Exception for handling cases where there's a mismatch between expected and actual file attributes.
-- FileType: Enum class that encapsulates various file types supported by the system, providing methods for
+- filetype: Enum class that encapsulates various file types supported by the system, providing methods for
             type determination from file attributes.
 
 Functions:
 - test_file_type_parsing(): Demonstrates and validates the parsing functionality for various file types.
-- test_file_type_matching(): Tests the matching and validation capabilities of the FileType class.
+- test_file_type_matching(): Tests the matching and validation capabilities of the filetype class.
 
 Dependencies:
 - collections.namedtuple: For defining simple classes for storing MIME type information.
-- enum.Enum: For creating the FileType enumeration.
+- enum.Enum: For creating the filetype enumeration.
 - pathlib.Path: For file path manipulations and checks.
 - opencf_core.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
 """
 
-from collections import namedtuple
-from enum import Enum
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Union
+from typing import Callable, Tuple, Type, Union
+
+from opencf_core.exceptions import (
+    EmptySuffixError,
+    MismatchedException,
+    UnsupportedFileTypeError,
+)
+from opencf_core.utils import ensure_iterable
 
 from .mimes import guess_mime_type_from_file
 
 
-# Custom Exceptions
-class UnsupportedFileTypeError(Exception):
-    """Exception raised for handling cases of unsupported file types."""
-
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-
-class EmptySuffixError(UnsupportedFileTypeError):
-    """Exception raised when a file's suffix does not provide enough information to determine its type."""
-
-    def __init__(self):
-        self.message = "Filetype not parsed from empty suffix."
-        super().__init__(self.message)
-
-
-class FileNotFoundError(Exception):
-    """Exception raised when the specified file cannot be found."""
-
-    def __init__(self, file_path):
-        self.file_path = file_path
-        message = f"File '{file_path}' does not exist."
-        super().__init__(message)
-
-
-class MismatchedException(Exception):
-    """Exception raised for mismatches between expected and actual file attributes."""
-
-    def __init__(self, label, claimed_val, expected_vals):
-        super().__init__(
-            f"Mismatched {label}: Found '{claimed_val}', Expected one of '{expected_vals}'"
-        )
-
-
 # File Type and MIME Type Definitions
-MimeType = namedtuple(
-    "MimeType", ["extensions", "mime_types", "upper_mime_types"], defaults=[(), (), ()]
-)
+@dataclass(eq=False, frozen=True)
+class MimeType:
+    extensions: Tuple[str, ...] = ()
+    mime_types: Tuple[str, ...] = ()
+    upper_mime_types: Tuple[str, ...] = ()
 
 
-class FileType(Enum):
-    """Enumeration of supported file types with methods for type determination and validation."""
+class BaseBaseFileType(ABC, EnumMeta):
+    value: MimeType = MimeType()
 
-    # Enum members defined with their respective MIME type information
     NOTYPE = MimeType()
-    CSV = MimeType(("csv",), ("text/csv",))
-    EXCEL = MimeType(
-        ("xls", "xlsx"),
-        (
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ),
-    )
-    MSWORD = MimeType(
-        ("docx", "doc"),
-        (
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/msword",
-        ),
-    )
-    JSON = MimeType(("json",), ("application/json",))
-    PDF = MimeType(("pdf",), ("application/pdf",))
-    IMAGE = MimeType(("jpg", "jpeg", "png"), ("image/jpeg", "image/png"))
-    GIF = MimeType(("gif",), ("image/gif",))
-    VIDEO = MimeType(("mp4", "avi"), ("video/mp4", "video/x-msvideo"))
-    XML = MimeType(("xml",), ("application/xml", "text/xml"))
-    MARKDOWN = MimeType(("md",), ("text/markdown",), ("text/plain",))
-    TEXT = MimeType(
-        ("txt",), ("text/plain",)
-    )  # put it at bottom as many other filetypes may be marked as text/plain too
+    TEXT = MimeType(("txt",), ("text/plain",))
     UNHANDLED = MimeType()
+
+    @abstractmethod
+    def get_value(self) -> MimeType:
+        pass
+
+    @classmethod
+    def from_mimetype(cls, file_path: Union[str, Path], raise_err: bool = False):
+        pass
+
+    @classmethod
+    def from_path(cls, path: Path, read_content=False, raise_err=False):
+        pass
+
+    @classmethod
+    def from_suffix(cls, suffix: str, raise_err: bool = False):
+        pass
+
+
+class BaseFileType(BaseBaseFileType):
+    def get_value(self) -> MimeType:
+        return self.value
+
+    @classmethod
+    def get_filetypes(cls):
+        for member in cls:
+            if not isinstance(member.get_value(), MimeType):
+                continue
+            yield member
 
     @classmethod
     def from_suffix(cls, suffix: str, raise_err: bool = False):
         """
-        Determines a FileType from a file's suffix.
+        Determines a filetype from a file's suffix.
 
         Args:
             suffix (str): The file suffix (extension).
             raise_err (bool, optional): Whether to raise an exception if the type is unhandled. Defaults to False.
 
         Returns:
-            FileType: The determined FileType enumeration member.
+            filetype: The determined filetype enumeration member.
 
         Raises:
             EmptySuffixError: If the suffix is empty and raise_err is True.
             UnsupportedFileTypeError: If the file type is unhandled and raise_err is True.
         """
+
+        # get suffix
         suffix = suffix.lower().lstrip(".")
         if not suffix:
             if raise_err:
                 raise EmptySuffixError()
-            else:
-                return cls.NOTYPE
-        for member in cls:
-            if member.value.extensions and suffix in member.value.extensions:
+            return cls.NOTYPE
+
+        # get a valid member
+        for member in cls.get_filetypes():
+            member_value = member.get_value()
+            if member_value.extensions and suffix in member_value.extensions:
                 return member
 
         if raise_err:
             raise UnsupportedFileTypeError(f"Unhandled filetype from suffix={suffix}")
-        else:
-            return cls.UNHANDLED
+
+        return cls.UNHANDLED
 
     @classmethod
     def from_mimetype(cls, file_path: Union[str, Path], raise_err: bool = False):
         """
-        Determines a FileType from a file's MIME type.
+        Determines a filetype from a file's MIME type.
 
         Args:
             file_path (str): The path to the file.
             raise_err (bool, optional): Whether to raise an exception if the type is unhandled. Defaults to False.
 
         Returns:
-            FileType: The determined FileType enumeration member.
+            filetype: The determined filetype enumeration member.
 
         Raises:
             FileNotFoundError: If the file does not exist.
@@ -162,8 +144,11 @@ class FileType(Enum):
 
         file_mimetype = guess_mime_type_from_file(str(file))
 
-        for member in cls:
-            if member.value.mime_types and file_mimetype in member.value.mime_types:
+        for member in cls.get_filetypes():
+            if (
+                member.get_value().mime_types
+                and file_mimetype in member.get_value().mime_types
+            ):
                 return member
 
         if raise_err:
@@ -185,7 +170,7 @@ class FileType(Enum):
     @classmethod
     def from_path(cls, path: Path, read_content=False, raise_err=False):
         """
-        Determines the FileType of a file based on its path. Optionally reads the file's content to verify its type.
+        Determines the filetype of a file based on its path. Optionally reads the file's content to verify its type.
 
         Args:
             path (Path): The path to the file.
@@ -195,7 +180,7 @@ class FileType(Enum):
                                         Defaults to False.
 
         Returns:
-            FileType: The determined FileType enumeration member based on the file's suffix and/or content.
+            filetype: The determined filetype enumeration member based on the file's suffix and/or content.
 
         Raises:
             FileNotFoundError: If the file does not exist when attempting to read its content.
@@ -233,27 +218,29 @@ class FileType(Enum):
 
     def is_true_filetype(self):
         """
-        Determines if the FileType instance represents a supported file type based on the presence of defined extensions.
+        Determines if the filetype instance represents a supported file type based on the presence of defined extensions.
 
         Returns:
-            bool: True if the FileType has at least one associated file extension, False otherwise.
+            bool: True if the filetype has at least one associated file extension, False otherwise.
         """
-        return len(self.value.extensions) != 0
+        return len(self.get_value().extensions) != 0
 
     def get_suffix(self):
         """
-        Retrieves the primary file extension associated with the FileType.
+        Retrieves the primary file extension associated with the filetype.
 
         Returns:
-            str: The primary file extension for the FileType, prefixed with a period.
-                 Returns an empty string if the FileType does not have an associated extension.
+            str: The primary file extension for the filetype, prefixed with a period.
+                 Returns an empty string if the filetype does not have an associated extension.
         """
-        ext = self.value.extensions[0] if self.is_true_filetype() else ""
+        if not self.is_true_filetype():
+            return ""
+        ext = self.get_value().extensions[0]
         return f".{ext}"
 
     def is_valid_suffix(self, suffix: str, raise_err=False):
         """
-        Validates whether a given file extension matches the FileType's expected extensions.
+        Validates whether a given file extension matches the filetype's expected extensions.
 
         Args:
             suffix (str): The file extension to validate, including the leading period (e.g., ".txt").
@@ -261,130 +248,158 @@ class FileType(Enum):
                                         Defaults to False.
 
         Returns:
-            bool: True if the suffix matches one of the FileType's extensions, False otherwise.
+            bool: True if the suffix matches one of the filetype's extensions, False otherwise.
 
         Raises:
             MismatchedException: If the suffix does not match and raise_err is True.
         """
-        _val = FileType.from_suffix(suffix=suffix)
+        _val = self.from_suffix(suffix=suffix)
         is_valid = _val == self
         if raise_err and not is_valid:
-            raise MismatchedException(f"suffix ({suffix})", _val, self.value.extensions)
+            raise MismatchedException(
+                f"suffix ({suffix})", _val, self.get_value().extensions
+            )
         return is_valid
 
     def is_valid_path(self, path: Path, raise_err=False, read_content=False):
         """
-        Validates whether the file at a given path matches the FileType, optionally checking the file's content.
+        Validates whether the file at a given path matches the filetype, optionally checking the file's content.
 
         Args:
             path (Path): The path to the file to validate.
             raise_err (bool, optional): If True, raises a MismatchedException for a mismatching file type.
                                         Defaults to False.
-            read_content (bool, optional): If True, also validates the file's content type against the FileType.
+            read_content (bool, optional): If True, also validates the file's content type against the filetype.
                                            Defaults to False.
 
         Returns:
-            bool: True if the file's type matches the FileType, based on its path and optionally its content.
+            bool: True if the file's type matches the filetype, based on its path and optionally its content.
                   False otherwise.
 
         Raises:
             MismatchedException: If the file's type does not match and raise_err is True.
         """
-        _val = FileType.from_path(path, read_content=read_content)
+        _val = self.from_path(path, read_content=read_content)
         is_valid = _val == self
         if raise_err and not is_valid:
-            raise MismatchedException(f"suffix/mime-type ({path})", _val, self.value)
+            raise MismatchedException(
+                f"suffix/mime-type ({path})", _val, self.get_value()
+            )
         return is_valid
 
     def is_valid_mime_type(self, path: Path, raise_err=False):
         """
-        Validates whether the MIME type of the file at the specified path aligns with the FileType's expected MIME types.
+        Validates whether the MIME type of the file at the specified path aligns with the filetype's expected MIME types.
 
-        This method first determines the FileType based on the file's actual MIME type (determined by reading the file's content)
-        and then checks if this determined FileType matches the instance calling this method. Special consideration is given to
-        FileType.TEXT, where a broader compatibility check is performed due to the generic nature of text MIME types.
+        This method first determines the filetype based on the file's actual MIME type (determined by reading the file's content)
+        and then checks if this determined filetype matches the instance calling this method. Special consideration is given to
+        filetype.TEXT, where a broader compatibility check is performed due to the generic nature of text MIME types.
 
         Args:
             path (Path): The path to the file whose MIME type is to be validated.
             raise_err (bool, optional): If True, a MismatchedException is raised if the file's MIME type does not match
-                                        the expected MIME types of the FileType instance. Defaults to False.
+                                        the expected MIME types of the filetype instance. Defaults to False.
 
         Returns:
-            bool: True if the file's MIME type matches the expected MIME types for this FileType instance or if special
-                compatibility conditions are met (e.g., for FileType.TEXT with "text/plain"). Otherwise, False.
+            bool: True if the file's MIME type matches the expected MIME types for this filetype instance or if special
+                compatibility conditions are met (e.g., for filetype.TEXT with "text/plain"). Otherwise, False.
 
         Raises:
             MismatchedException: If raise_err is True and the file's MIME type does not match the expected MIME types
-                                for this FileType instance, including detailed information about the mismatch.
+                                for this filetype instance, including detailed information about the mismatch.
         """
-        _val = FileType.from_mimetype(path)
+        _val = self.from_mimetype(path)
         is_valid = _val == self
 
         # many things can be text/plain
-        if _val == FileType.TEXT and "text/plain" in self.value.upper_mime_types:
+        if _val == self.TEXT and "text/plain" in self.get_value().upper_mime_types:
             is_valid = True
 
         if raise_err and not is_valid:
             raise MismatchedException(
-                f"content-type({path})", _val, self.value.mime_types
+                f"content-type({path})", _val, self.get_value().mime_types
             )
         return is_valid
 
 
-# Test Functions
-def test_file_type_parsing():
-    """Tests for validating the functionality of file type parsing."""
-    # Test parsing of different file types
-    text_path = Path("test.txt")
-    csv_path = Path("data.csv")
-    excel_path = Path("results.xlsx")
-    json_path = Path("config.json")
-    img_path = Path("picture.jpg")
+def extend_filetype_enum(
+    inherited_enum: Type[Enum],
+) -> Callable[[Type[Enum]], Type[Enum]]:
+    def wrapper(added_enum: Type[Enum]) -> Type[Enum]:
+        # Create a dictionary to hold the merged enum values
+        joined = {}
 
-    assert FileType.from_path(text_path) == FileType.TEXT
-    assert FileType.from_path(csv_path) == FileType.CSV
-    assert FileType.from_path(excel_path) == FileType.EXCEL
-    assert FileType.from_path(json_path) == FileType.JSON
-    assert FileType.from_path(img_path) == FileType.IMAGE
-    assert FileType.from_path(Path("no_extension")) == FileType.NOTYPE
-    assert FileType.from_path(Path("unknown.xyz")) == FileType.UNHANDLED
+        # Copy values from the inherited enum
+        for item in ensure_iterable(inherited_enum, raise_err=False):
+            # Make sure the value is of the inherited enum type
+            assert isinstance(item.value, MimeType)
+            joined[item.name] = item.value
 
+        # Copy values from the added enum
+        for item in ensure_iterable(added_enum, raise_err=False):
+            # Make sure the value is of the inherited enum type
+            assert isinstance(item.value, MimeType)
+            joined[item.name] = item.value
 
-def test_file_type_matching():
-    """Tests for validating the functionality of file type matching."""
-    # Test matching of different file types
-    text_path = Path("test.txt")
-    csv_path = Path("data.csv")
-    excel_path = Path("results.xlsx")
-    json_path = Path("config.json")
-    img_path = Path("picture.jpg")
+        # Create a new Enum class with the merged values$
+        new_enum = Enum(added_enum.__name__, joined)  # type: ignore
 
-    assert FileType.TEXT.is_valid_path(text_path)
-    assert not FileType.TEXT.is_valid_path(csv_path)
+        # users can override/add enum members, methods, class methods in the added enum
+        methods = tuple(inherited_enum.__dict__.items()) + tuple(
+            added_enum.__dict__.items()
+        )
 
-    assert FileType.CSV.is_valid_path(csv_path)
-    assert not FileType.CSV.is_valid_path(excel_path)
+        # Copy methods and class methods from the inherited enum
+        for method_name, method in methods:
+            if callable(method):
+                setattr(new_enum, method_name, method)
+            if isinstance(method, classmethod):
+                setattr(new_enum, method_name, method)
 
-    assert FileType.EXCEL.is_valid_path(excel_path)
-    assert not FileType.EXCEL.is_valid_path(json_path)
+        return new_enum
 
-    assert FileType.JSON.is_valid_path(json_path)
-    assert not FileType.JSON.is_valid_path(img_path)
-
-    assert FileType.IMAGE.is_valid_path(img_path)
-    assert not FileType.IMAGE.is_valid_path(text_path)
-
-    assert FileType.NOTYPE.is_valid_path(Path("no_extension"))
-    assert not FileType.NOTYPE.is_valid_path(text_path)
-
-    assert FileType.UNHANDLED.is_valid_path(Path("unknown.xyz"))
-    assert not FileType.UNHANDLED.is_valid_path(csv_path)
+    return wrapper
 
 
-if __name__ == "__main__":
-    import sys
+class FileTypeEnum(Enum):
+    """Enumeration of supported file types with methods for type determination and validation."""
 
-    sys.path.append(".")
-    test_file_type_parsing()
-    test_file_type_matching()
-    print("All tests passed!")
+    # Enum members defined with their respective MIME type information
+
+    NOTYPE = MimeType()
+    # put it at bottom as many other filetypes may be marked as text/plain too
+    TEXT = MimeType(("txt",), ("text/plain",))
+    UNHANDLED = MimeType()
+
+    CSV = MimeType(("csv",), ("text/csv",), ("text/plain",))
+    MARKDOWN = MimeType(("md",), ("text/markdown",), ("text/plain",))
+
+    EXCEL = MimeType(
+        ("xls", "xlsx"),
+        (
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ),
+    )
+    MSWORD = MimeType(
+        ("docx", "doc"),
+        (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",
+        ),
+    )
+    JSON = MimeType(("json",), ("application/json",))
+    PDF = MimeType(("pdf",), ("application/pdf",))
+    IMAGE = MimeType(("jpg", "jpeg", "png"), ("image/jpeg", "image/png"))
+    GIF = MimeType(("gif",), ("image/gif",))
+    VIDEO = MimeType(("mp4", "avi"), ("video/mp4", "video/x-msvideo"))
+    XML = MimeType(("xml",), ("application/xml", "text/xml"))
+
+    # def get_value(self) -> MimeType:
+    #     return self.value
+
+
+@extend_filetype_enum(FileTypeEnum)
+@extend_filetype_enum(BaseFileType)
+class FileType(Enum):
+    pass

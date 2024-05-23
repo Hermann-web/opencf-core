@@ -7,7 +7,7 @@ This module provides a singleton class for guessing MIME types from file paths u
 try:
     import magic  # pip install python-magic
 except ImportError:
-    magic = None
+    magic = None  # type: ignore
 
 
 class MimeGuesser:

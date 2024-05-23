@@ -16,10 +16,11 @@ Exceptions:
 """
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable, List, Optional, Tuple, Type, Union
 
-from .filetypes import EmptySuffixError, FileType
+from .filetypes import BaseBaseFileType, BaseFileType, EmptySuffixError
 from .io_handler import FileReader, FileWriter, SamePathReader
 from .logging_config import logger
 
@@ -37,6 +38,7 @@ class ResolvedInputFile:
         file_type: Optional[str] = None,
         add_suffix: bool = False,
         read_content: bool = False,
+        filetype_class: Optional[Type[BaseBaseFileType]] = BaseFileType,
     ):
         """
         Initializes an instance of ResolvedInputFile with options for type resolution and path modification.
@@ -45,12 +47,17 @@ class ResolvedInputFile:
             path (str): The path to the file or folder.
             is_dir (bool, optional): Specifies if the path is a directory. If None, inferred using pathlib. Defaults to None.
             should_exist (bool, optional): Specifies if the existence of the path is required. Defaults to True.
-            file_type (str, optional): The explicit type of the file. If None, attempts to resolve to a FileType object based on the path or content.
+            file_type (str, optional): The explicit type of the file. If None, attempts to resolve to a filetype object based on the path or content.
             add_suffix (bool, optional): Whether to append the resolved file type's suffix to the file path. Defaults to False.
             read_content (bool, optional): Whether to read the file's content to assist in type resolution. Defaults to False.
         """
         # Convert path to Path object
         self.path = Path(path)
+
+        if filetype_class is None:
+            filetype_class = BaseFileType
+        assert issubclass(filetype_class, Enum)
+        self.filetype_class = filetype_class
 
         self._check_existence(should_exist)
 
@@ -126,7 +133,7 @@ class ResolvedInputFile:
             )
         # Create directory if it doesn't exist
         self.path.mkdir(exist_ok=True)
-        resolved_file_type = FileType.from_suffix(file_type, raise_err=True)
+        resolved_file_type = self.filetype_class.from_suffix(file_type, raise_err=True)
         assert resolved_file_type.is_true_filetype()
         suffix = resolved_file_type.get_suffix()
         return resolved_file_type, suffix
@@ -138,7 +145,7 @@ class ResolvedInputFile:
         Resolves the file type based on given parameters.
 
         Args:
-            file_type (FileType or str, optional): An explicit file type or extension.
+            file_type (BaseFileType or str, optional): An explicit file type or extension.
             read_content (bool): Indicates if file content should be used to help resolve the file type.
             add_suffix (bool): Whether to append the resolved file type's suffix to the file path.
         """
@@ -158,29 +165,29 @@ class ResolvedInputFile:
 
     def __resolve_filetype__(
         self, file_type: Optional[str], file_path: Path, read_content: bool
-    ) -> FileType:
+    ) -> BaseFileType:
         """
         Determines the file type, utilizing the provided type, file path, or content as needed.
 
         Args:
-            file_type (FileType or str, optional): An explicit file type or extension.
+            file_type (BaseFileType or str, optional): An explicit file type or extension.
             file_path (str): The path to the file, used if file_type is not provided.
             read_content (bool): Indicates if file content should be used to help resolve the file type.
 
         Returns:
-            FileType: The resolved file type.
+            BaseFileType: The resolved file type.
         """
         if not file_type:
             try:
-                return FileType.from_path(
+                return self.filetype_class.from_path(
                     file_path, read_content=read_content, raise_err=True
                 )
             except EmptySuffixError:
                 raise ValueError("filepath suffix is emtpy but file_type not set")
 
-        resolved_file_type = FileType.from_suffix(file_type, raise_err=True)
+        resolved_file_type = self.filetype_class.from_suffix(file_type, raise_err=True)
 
-        file_type_from_path = FileType.from_path(
+        file_type_from_path = self.filetype_class.from_path(
             file_path, read_content=read_content, raise_err=False
         )
 
@@ -384,55 +391,57 @@ class BaseConverter(ABC):
         return cls.get_supported_output_types()
 
     @classmethod
-    def get_supported_input_types(cls) -> Tuple[FileType, ...]:
+    def get_supported_input_types(cls) -> Tuple[BaseFileType, ...]:
         """
         Defines the supported input file types for this converter.
 
         Returns:
-            Tuple[FileType]: The file types supported for input.
+            Tuple[BaseFileType]: The file types supported for input.
         """
         input_types = cls._get_supported_input_types()
 
-        # Check if input_types is a single FileType instance
-        if isinstance(input_types, FileType):
+        # Check if input_types is a single BaseFileType instance
+        if isinstance(input_types, BaseFileType):
             return (input_types,)  # Convert single instance to tuple
 
-        # Check if input_types is an iterable of FileType instances
+        # Check if input_types is an iterable of BaseFileType instances
         input_types = tuple(input_types)
-        if not all(isinstance(input_type, FileType) for input_type in input_types):
+        if not all(isinstance(input_type, BaseFileType) for input_type in input_types):
             raise ValueError("Invalid supported input file type")
 
         return input_types
 
     @classmethod
-    def get_supported_output_types(cls) -> Tuple[FileType, ...]:
+    def get_supported_output_types(cls) -> Tuple[BaseFileType, ...]:
         """
         Defines the supported output file types for this converter.
 
         Returns:
-            Tuple[FileType]: The file types supported for output.
+            Tuple[BaseFileType]: The file types supported for output.
         """
         output_types = cls._get_supported_output_types()
 
-        # Check if output_types is a single FileType instance
-        if isinstance(output_types, FileType):
+        # Check if output_types is a single BaseFileType instance
+        if isinstance(output_types, BaseFileType):
             return (output_types,)  # Convert single instance to tuple
 
-        # Check if output_types is an iterable of FileType instances
+        # Check if output_types is an iterable of BaseFileType instances
         output_types = tuple(output_types)
-        if not all(isinstance(output_type, FileType) for output_type in output_types):
+        if not all(
+            isinstance(output_type, BaseFileType) for output_type in output_types
+        ):
             raise ValueError("Invalid supported output file type")
 
         return output_types
 
     @classmethod
     @abstractmethod
-    def _get_supported_input_types(cls) -> Iterable[FileType]:
+    def _get_supported_input_types(cls) -> Iterable[BaseFileType]:
         """
         Abstract method to define the supported input file types by the converter.
 
         Returns:
-            Iterable[FileType]: The supported input file type.
+            Iterable[BaseFileType]: The supported input file type.
         """
         raise NotImplementedError(
             f"{cls.__name__}._get_supported_input_typess() must be implemented by subclasses."
@@ -440,12 +449,12 @@ class BaseConverter(ABC):
 
     @classmethod
     @abstractmethod
-    def _get_supported_output_types(cls) -> Iterable[FileType]:
+    def _get_supported_output_types(cls) -> Iterable[BaseFileType]:
         """
         Abstract method to define the supported output file types by the converter.
 
         Returns:
-            Iterable[FileType]: The supported output file type.
+            Iterable[BaseFileType]: The supported output file type.
         """
         raise NotImplementedError(
             f"{cls.__name__}._get_supported_output_typess() must be implemented by subclasses."

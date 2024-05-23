@@ -35,7 +35,7 @@ class ColoredFormatter(logging.Formatter):
 class LoggerConfig:
     def __init__(self) -> None:
         self.logger: logging.Logger = logging.Logger("_")
-        self.log_file: Optional[str] = None
+        self.log_file: Optional[Path] = None
         self.log_level: int = logging.INFO
 
     def setup_logger(
