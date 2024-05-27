@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
 from .base_converter import BaseConverter, ResolvedInputFile
-from .filetypes import BaseFileType, FileType
+from .filetypes import FileType
 from .logging_config import logger
 
 
@@ -20,7 +20,7 @@ class BaseConverterApp:
     """
 
     converters: List[Type[BaseConverter]] = []
-    filetype_class: Type[BaseFileType] = FileType
+    filetype_class: Type[FileType] = FileType
 
     def __init__(
         self,
@@ -34,13 +34,13 @@ class BaseConverterApp:
 
         Args:
             input_file_paths (List[str]): List of paths to the input files.
-            input_file_type (BaseFileType, optional): The type of the input file. Defaults to None.
+            input_file_type (FileType, optional): The type of the input file. Defaults to None.
             output_file_path (str, optional): The path to the output file. Defaults to None.
-            output_file_type (BaseFileType, optional): The type of the output file. Defaults to None.
+            output_file_type (FileType, optional): The type of the output file. Defaults to None.
         """
 
         self._converter_map: Dict[
-            Tuple[BaseFileType, BaseFileType], List[Type[BaseConverter]]
+            Tuple[FileType, FileType], List[Type[BaseConverter]]
         ] = defaultdict(list)
 
         if not isinstance(input_file_paths, list):
@@ -112,7 +112,7 @@ class BaseConverterApp:
             self._converter_map[(input_type, output_type)].append(converter_class)
 
     def get_converters_for_conversion(
-        self, input_type: BaseFileType, output_type: BaseFileType
+        self, input_type: FileType, output_type: FileType
     ) -> List[Type[BaseConverter]]:
         """
         Returns a list of converter classes for a given input-output type pair.
@@ -128,12 +128,12 @@ class BaseConverterApp:
 
     def get_supported_conversions(
         self,
-    ) -> Tuple[Tuple[BaseFileType, BaseFileType], ...]:
+    ) -> Tuple[Tuple[FileType, FileType], ...]:
         """
         Retrieves the supported conversions.
 
         Returns:
-            Tuple[Tuple[BaseFileType, BaseFileType]]: A tuple of tuples representing supported conversions.
+            Tuple[Tuple[FileType, FileType]]: A tuple of tuples representing supported conversions.
         """
         return tuple(self._converter_map.keys())
 

@@ -21,7 +21,7 @@ sed -i 's/^name =.*/name = "buildthedocs"/' "$POETRY_DIR/pyproject.toml"
 echo "-> cleaning env ..."
 rm poetry.lock
 rm -rf $(poetry env info --path)
-poetry install --no-root
+poetry install --no-root --without dev
 poetry export -f requirements.txt --output $DOCS_DIR/requirements.txt --without-hashes --with buildthedocs
 
 # setup docs files and activate env

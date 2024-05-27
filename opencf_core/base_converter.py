@@ -6,11 +6,12 @@ of file converters through abstract base classes, managing file types, and handl
 efficiently. The module is designed to be extendible, supporting various file formats and conversion strategies.
 
 Classes:
+
 - ResolvedInputFile: Manages file paths and types, resolving them as needed.
-- BaseConverter: An abstract base class for creating specific file format converters, enforcing the implementation
-                 of file conversion logic.
+- BaseConverter: An abstract base class for creating specific file format converters, enforcing the implementation of file conversion logic.
 
 Exceptions:
+
 - ValueError: Raised when file paths or types are incompatible or unsupported.
 - AssertionError: Ensured for internal consistency checks, confirming that file types match expected values.
 """
@@ -20,7 +21,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple, Type, Union
 
-from .filetypes import BaseFileType, EmptySuffixError, FileType
+from .filetypes import EmptySuffixError, FileType
 from .io_handler import FileReader, FileWriter, SamePathReader
 from .logging_config import logger
 
@@ -38,7 +39,7 @@ class ResolvedInputFile:
         file_type: Optional[str] = None,
         add_suffix: bool = False,
         read_content: bool = False,
-        filetype_class: Optional[Type[BaseFileType]] = FileType,
+        filetype_class: Optional[Type[FileType]] = FileType,
     ):
         """
         Initializes an instance of ResolvedInputFile with options for type resolution and path modification.
@@ -145,7 +146,7 @@ class ResolvedInputFile:
         Resolves the file type based on given parameters.
 
         Args:
-            file_type (BaseFileType or str, optional): An explicit file type or extension.
+            file_type (FileType or str, optional): An explicit file type or extension.
             read_content (bool): Indicates if file content should be used to help resolve the file type.
             add_suffix (bool): Whether to append the resolved file type's suffix to the file path.
         """
@@ -165,17 +166,17 @@ class ResolvedInputFile:
 
     def __resolve_filetype__(
         self, file_type: Optional[str], file_path: Path, read_content: bool
-    ) -> BaseFileType:
+    ) -> FileType:
         """
         Determines the file type, utilizing the provided type, file path, or content as needed.
 
         Args:
-            file_type (BaseFileType or str, optional): An explicit file type or extension.
+            file_type (FileType or str, optional): An explicit file type or extension.
             file_path (str): The path to the file, used if file_type is not provided.
             read_content (bool): Indicates if file content should be used to help resolve the file type.
 
         Returns:
-            BaseFileType: The resolved file type.
+            FileType: The resolved file type.
         """
         if not file_type:
             try:
@@ -391,57 +392,55 @@ class BaseConverter(ABC):
         return cls.get_supported_output_types()
 
     @classmethod
-    def get_supported_input_types(cls) -> Tuple[BaseFileType, ...]:
+    def get_supported_input_types(cls) -> Tuple[FileType, ...]:
         """
         Defines the supported input file types for this converter.
 
         Returns:
-            Tuple[BaseFileType]: The file types supported for input.
+            Tuple[FileType]: The file types supported for input.
         """
         input_types = cls._get_supported_input_types()
 
-        # Check if input_types is a single BaseFileType instance
-        if isinstance(input_types, BaseFileType):
+        # Check if input_types is a single FileType instance
+        if isinstance(input_types, FileType):
             return (input_types,)  # Convert single instance to tuple
 
-        # Check if input_types is an iterable of BaseFileType instances
+        # Check if input_types is an iterable of FileType instances
         input_types = tuple(input_types)
-        if not all(isinstance(input_type, BaseFileType) for input_type in input_types):
+        if not all(isinstance(input_type, FileType) for input_type in input_types):
             raise ValueError("Invalid supported input file type")
 
         return input_types
 
     @classmethod
-    def get_supported_output_types(cls) -> Tuple[BaseFileType, ...]:
+    def get_supported_output_types(cls) -> Tuple[FileType, ...]:
         """
         Defines the supported output file types for this converter.
 
         Returns:
-            Tuple[BaseFileType]: The file types supported for output.
+            Tuple[FileType]: The file types supported for output.
         """
         output_types = cls._get_supported_output_types()
 
-        # Check if output_types is a single BaseFileType instance
-        if isinstance(output_types, BaseFileType):
+        # Check if output_types is a single FileType instance
+        if isinstance(output_types, FileType):
             return (output_types,)  # Convert single instance to tuple
 
-        # Check if output_types is an iterable of BaseFileType instances
+        # Check if output_types is an iterable of FileType instances
         output_types = tuple(output_types)
-        if not all(
-            isinstance(output_type, BaseFileType) for output_type in output_types
-        ):
+        if not all(isinstance(output_type, FileType) for output_type in output_types):
             raise ValueError("Invalid supported output file type")
 
         return output_types
 
     @classmethod
     @abstractmethod
-    def _get_supported_input_types(cls) -> Iterable[BaseFileType]:
+    def _get_supported_input_types(cls) -> Iterable[FileType]:
         """
         Abstract method to define the supported input file types by the converter.
 
         Returns:
-            Iterable[BaseFileType]: The supported input file type.
+            Iterable[FileType]: The supported input file type.
         """
         raise NotImplementedError(
             f"{cls.__name__}._get_supported_input_typess() must be implemented by subclasses."
@@ -449,12 +448,12 @@ class BaseConverter(ABC):
 
     @classmethod
     @abstractmethod
-    def _get_supported_output_types(cls) -> Iterable[BaseFileType]:
+    def _get_supported_output_types(cls) -> Iterable[FileType]:
         """
         Abstract method to define the supported output file types by the converter.
 
         Returns:
-            Iterable[BaseFileType]: The supported output file type.
+            Iterable[FileType]: The supported output file type.
         """
         raise NotImplementedError(
             f"{cls.__name__}._get_supported_output_typess() must be implemented by subclasses."
