@@ -1,3 +1,14 @@
+"""
+Classes:
+
+- UnsupportedFileTypeError: Custom exception for handling unsupported file types.
+- EmptySuffixError: Specialized exception for cases where a file's suffix does not provide enough information
+                    to determine its type.
+- FileNotFoundError: Raised when a specified file does not exist.
+- MismatchedException: Exception for handling cases where there's a mismatch between expected and actual file attributes.
+"""
+
+
 # Custom Exceptions
 class UnsupportedFileTypeError(Exception):
     """Exception raised for handling cases of unsupported file types."""

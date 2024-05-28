@@ -2,6 +2,7 @@ import unittest
 
 from opencf_core.utils import ensure_iterable
 
+
 class TestEnsureIterable(unittest.TestCase):
     def test_list(self):
         result = ensure_iterable([1, 2, 3])
@@ -23,5 +24,6 @@ class TestEnsureIterable(unittest.TestCase):
         result = ensure_iterable(123, raise_err=False)
         self.assertEqual(result, ())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

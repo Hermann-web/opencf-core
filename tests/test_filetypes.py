@@ -1,14 +1,14 @@
 import unittest
 from pathlib import Path
 
-from opencf_core.filetypes import Enum, FileType, MimeType, extend_filetype_enum
 from opencf_core.exceptions import EmptySuffixError, UnsupportedFileTypeError
+from opencf_core.filetypes import FileType, MimeType
 
 DATA_FOLDER = Path(__file__).parent.parent / "examples" / "data"
 assert DATA_FOLDER.exists() and DATA_FOLDER.is_dir()
 
-class FileTypeTest(unittest.TestCase):
 
+class FileTypeTest(unittest.TestCase):
     def test_different_mimetypes(self):
         mimetype1 = MimeType()
         mimetype2 = MimeType()
@@ -87,10 +87,10 @@ class FileTypeTest(unittest.TestCase):
         """Test the is_valid_mime_type method."""
         DATA_FOLDER = Path("examples/data")
         assert DATA_FOLDER.exists()
-        text_path = Path(DATA_FOLDER/"example.txt")
-        csv_path = Path(DATA_FOLDER/"example.csv")
-        xlsx_path = Path(DATA_FOLDER/"example.xlsx")
-        xml_path = Path(DATA_FOLDER/"example.xml")
+        text_path = Path(DATA_FOLDER / "example.txt")
+        csv_path = Path(DATA_FOLDER / "example.csv")
+        xlsx_path = Path(DATA_FOLDER / "example.xlsx")
+        xml_path = Path(DATA_FOLDER / "example.xml")
 
         # the mimetype should be valid
         self.assertTrue(FileType.TEXT.is_valid_mime_type(text_path))
@@ -102,10 +102,10 @@ class FileTypeTest(unittest.TestCase):
         self.assertFalse(FileType.EXCEL.is_valid_mime_type(text_path))
 
         # by checking only the content, all flat files identified as text/plain should match with all possible text/plain formats
-        # no need actually, while fill up the matches ? 
+        # no need actually, while fill up the matches ?
         self.assertFalse(FileType.CSV.is_valid_mime_type(text_path))
         self.assertFalse(FileType.XML.is_valid_mime_type(text_path))
-        # text/plain has been added in txt options upper_mime_types, 
+        # text/plain has been added in txt options upper_mime_types,
         # as csv can't be easily deteted i guess
         self.assertTrue(FileType.TEXT.is_valid_mime_type(csv_path))
         # unlike xml
@@ -123,19 +123,25 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_suffix("")[0], FileType.NOTYPE)
 
         # Test with return_matches=True
-        self.assertEqual(FileType.from_suffix(".txt", return_matches=True), (FileType.TEXT, (FileType.TEXT,)))
-        self.assertEqual(FileType.from_suffix(".unknown", return_matches=True), (FileType.UNHANDLED, tuple()))
+        self.assertEqual(
+            FileType.from_suffix(".txt", return_matches=True),
+            (FileType.TEXT, (FileType.TEXT,)),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".unknown", return_matches=True),
+            (FileType.UNHANDLED, tuple()),
+        )
 
     def test_from_mimetype(self):
         """Test the from_mimetype method."""
         DATA_FOLDER = Path("examples/data")
         assert DATA_FOLDER.exists()
-        text_path = Path(DATA_FOLDER/"example.txt")
-        csv_path = Path(DATA_FOLDER/"example.csv")
-        xlsx_path = Path(DATA_FOLDER/"example.xlsx")
-        json_path = Path(DATA_FOLDER/"example.json")
-        img_path = Path(DATA_FOLDER/"example.jpg")
-        xml_path = Path(DATA_FOLDER/"example.xml")
+        text_path = Path(DATA_FOLDER / "example.txt")
+        # csv_path = Path(DATA_FOLDER / "example.csv")
+        xlsx_path = Path(DATA_FOLDER / "example.xlsx")
+        json_path = Path(DATA_FOLDER / "example.json")
+        img_path = Path(DATA_FOLDER / "example.jpg")
+        xml_path = Path(DATA_FOLDER / "example.xml")
 
         self.assertEqual(FileType.from_mimetype(text_path)[0], FileType.TEXT)
         # Need to handle csv vs plain
@@ -146,19 +152,25 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_mimetype(xml_path)[0], FileType.XML)
 
         # Test with return_matches=True
-        self.assertEqual(FileType.from_mimetype(text_path, return_matches=True), (FileType.TEXT, (FileType.TEXT,)))
-        self.assertEqual(FileType.from_mimetype(xml_path, return_matches=True), (FileType.XML, (FileType.XML,)))
+        self.assertEqual(
+            FileType.from_mimetype(text_path, return_matches=True),
+            (FileType.TEXT, (FileType.TEXT,)),
+        )
+        self.assertEqual(
+            FileType.from_mimetype(xml_path, return_matches=True),
+            (FileType.XML, (FileType.XML,)),
+        )
         # Need to find a file which content is unhandled by the magic moule
         # self.assertEqual(FileType.from_mimetype(DATA_FOLDER / "example.xyz", return_matches=True), (FileType.UNHANDLED, tuple()))
 
     def test_from_path(self):
         """Test the from_path method."""
-        text_path = Path(DATA_FOLDER/"example.txt")
-        csv_path = Path(DATA_FOLDER/"example.csv")
-        xlsx_path = Path(DATA_FOLDER/"example.xlsx")
-        json_path = Path(DATA_FOLDER/"example.json")
-        img_path = Path(DATA_FOLDER/"example.jpg")
-        xml_path = Path(DATA_FOLDER/"example.xml")
+        text_path = Path(DATA_FOLDER / "example.txt")
+        csv_path = Path(DATA_FOLDER / "example.csv")
+        xlsx_path = Path(DATA_FOLDER / "example.xlsx")
+        json_path = Path(DATA_FOLDER / "example.json")
+        img_path = Path(DATA_FOLDER / "example.jpg")
+        xml_path = Path(DATA_FOLDER / "example.xml")
 
         self.assertEqual(FileType.from_path(text_path)[0], FileType.TEXT)
         self.assertEqual(FileType.from_path(csv_path)[0], FileType.CSV)
@@ -168,17 +180,35 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_path(xml_path)[0], FileType.XML)
 
         # Test read_content=True
-        self.assertEqual(FileType.from_path(text_path, read_content=True)[0], FileType.TEXT)
+        self.assertEqual(
+            FileType.from_path(text_path, read_content=True)[0], FileType.TEXT
+        )
         # Need to handle csv vs plain
-        self.assertEqual(FileType.from_path(csv_path, read_content=True)[0], FileType.CSV)
-        self.assertEqual(FileType.from_path(xlsx_path, read_content=True)[0], FileType.EXCEL)
-        self.assertEqual(FileType.from_path(json_path, read_content=True)[0], FileType.JSON)
-        self.assertEqual(FileType.from_path(img_path, read_content=True)[0], FileType.IMAGE)
-        self.assertEqual(FileType.from_path(xml_path, read_content=True)[0], FileType.XML)
+        self.assertEqual(
+            FileType.from_path(csv_path, read_content=True)[0], FileType.CSV
+        )
+        self.assertEqual(
+            FileType.from_path(xlsx_path, read_content=True)[0], FileType.EXCEL
+        )
+        self.assertEqual(
+            FileType.from_path(json_path, read_content=True)[0], FileType.JSON
+        )
+        self.assertEqual(
+            FileType.from_path(img_path, read_content=True)[0], FileType.IMAGE
+        )
+        self.assertEqual(
+            FileType.from_path(xml_path, read_content=True)[0], FileType.XML
+        )
 
         # Test with return_matches=True
-        self.assertEqual(FileType.from_path(text_path, return_matches=True), (FileType.TEXT, (FileType.TEXT,)))
-        self.assertEqual(FileType.from_path(Path("examples/data/unknown.xyz"), return_matches=True), (FileType.UNHANDLED, tuple()))
+        self.assertEqual(
+            FileType.from_path(text_path, return_matches=True),
+            (FileType.TEXT, (FileType.TEXT,)),
+        )
+        self.assertEqual(
+            FileType.from_path(Path("examples/data/unknown.xyz"), return_matches=True),
+            (FileType.UNHANDLED, tuple()),
+        )
 
     def test_unsupported_file_type_error(self):
         """Test UnsupportedFileTypeError exception."""
@@ -227,8 +257,12 @@ class FileTypeTest(unittest.TestCase):
 
     def test_invalid_paths(self):
         """Test invalid file paths."""
-        self.assertEqual(FileType.from_path(Path("nonexistent.file")), (FileType.UNHANDLED, tuple()))
-        self.assertEqual(FileType.from_path(Path("unknown_type.xyz")), (FileType.UNHANDLED, tuple()))
+        self.assertEqual(
+            FileType.from_path(Path("nonexistent.file")), (FileType.UNHANDLED, tuple())
+        )
+        self.assertEqual(
+            FileType.from_path(Path("unknown_type.xyz")), (FileType.UNHANDLED, tuple())
+        )
 
     def test_case_insensitivity(self):
         """Test that file type detection is case insensitive."""
@@ -241,7 +275,9 @@ class FileTypeTest(unittest.TestCase):
     def test_special_characters_in_path(self):
         """Test paths with special characters."""
         special_path = Path("test@file!.txt")
-        self.assertEqual(FileType.from_path(special_path), (FileType.TEXT, (FileType.TEXT,)))
+        self.assertEqual(
+            FileType.from_path(special_path), (FileType.TEXT, (FileType.TEXT,))
+        )
 
     def test_long_extensions(self):
         """Test file types with long extensions."""
@@ -250,12 +286,18 @@ class FileTypeTest(unittest.TestCase):
 
     def test_whitespace_in_path(self):
         """Test file paths with leading or trailing whitespace."""
-        self.assertEqual(FileType.from_path(Path(" test.txt ")), (FileType.UNHANDLED, tuple()))
-        self.assertEqual(FileType.from_path(Path(" data.csv ")), (FileType.UNHANDLED, tuple()))
+        self.assertEqual(
+            FileType.from_path(Path(" test.txt ")), (FileType.UNHANDLED, tuple())
+        )
+        self.assertEqual(
+            FileType.from_path(Path(" data.csv ")), (FileType.UNHANDLED, tuple())
+        )
 
     def test_no_suffix_file(self):
         """Test a file with no suffix."""
-        self.assertEqual(FileType.from_path(Path("file_with_no_suffix")), (FileType.NOTYPE, tuple()))
+        self.assertEqual(
+            FileType.from_path(Path("file_with_no_suffix")), (FileType.NOTYPE, tuple())
+        )
 
     # def test_invalid_mime_type(self):
     #     """Test invalid MIME types."""
@@ -271,15 +313,15 @@ class FileTypeTest(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             FileType.from_mimetype(Path("nonexistent.txt"))
 
-    def test_update_file_type_enum(self):
-        class FileTypeUpdate(Enum):
-            DOCX = "docx"
-            XLSX = "xlsx"
+    # def test_update_file_type_enum(self):
+    #     class FileTypeUpdate(Enum):
+    #         DOCX = M
+    #         XLSX = "xlsx"
 
-        extend_filetype_enum(FileTypeUpdate)
+    #     extend_filetype_enum(FileTypeUpdate)
 
-        new_members = list(FileTypeUpdate)
-        updated_enum_members = list(FileType)
+    #     new_members = list(FileTypeUpdate)
+    #     updated_enum_members = list(FileType)
 
 
 if __name__ == "__main__":

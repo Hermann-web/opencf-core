@@ -8,23 +8,12 @@ errors related to file type processing.
 
 Classes:
 
-- UnsupportedFileTypeError: Custom exception for handling unsupported file types.
-- EmptySuffixError: Specialized exception for cases where a file's suffix does not provide enough information
-                    to determine its type.
-- FileNotFoundError: Raised when a specified file does not exist.
-- MismatchedException: Exception for handling cases where there's a mismatch between expected and actual file attributes.
 - FileType: Enum class that encapsulates various file types supported by the system, providing methods for
                 type determination from file attributes.
-
-Functions:
-
-- test_file_type_parsing(): Demonstrates and validates the parsing functionality for various file types.
-- test_file_type_matching(): Tests the matching and validation capabilities of the FileType class.
 
 Dependencies:
 
 - collections.namedtuple: For defining simple classes for storing MIME type information.
-- enum.Enum: For creating the FileType enumeration.
 - pathlib.Path: For file path manipulations and checks.
 - opencf_core.mimes.guess_mime_type_from_file: Utility function to guess MIME type from a file path.
 
@@ -61,10 +50,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterable, Tuple, Type, Union
+from typing import Dict, Iterable, Tuple, Type, Union
 
-from aenum import extend_enum  # type: ignore
-
+from opencf_core.enum import Enum, extend_enum_with_methods
 from opencf_core.exceptions import (
     EmptySuffixError,
     MismatchedException,
@@ -72,13 +60,6 @@ from opencf_core.exceptions import (
 )
 
 from .mimes import guess_mime_type_from_file
-
-if TYPE_CHECKING:
-    # this is only processed by MyPy (i.e. not at runtime)
-    from enum import Enum
-else:
-    # this is real runtime code
-    from aenum import Enum
 
 
 @dataclass(eq=False, frozen=True)
@@ -488,9 +469,6 @@ def extract_enum_members(enum_cls: Type) -> Dict[str, MimeType]:
     extracted_members: Dict[str, MimeType] = {}
     items: Iterable
 
-    if issubclass(enum_cls, FileType):
-        enum_cls = enum_cls
-
     if issubclass(enum_cls, Enum):
         items = ((item.name, item.value) for item in enum_cls)
     else:
@@ -514,19 +492,13 @@ def extend_filetype_enum(added_enum: Type[Enum]) -> None:
     Args:
         added_enum (Type[Enum]): The enum class to extend BaseFileType with.
     """
-    inherited_enum = FileType
 
-    # Add new members from added_enum to inherited_enum
-    for name, member in added_enum.__members__.items():
-        extend_enum(inherited_enum, name, member.value)
+    def is_member_mimetype(member: Enum):
+        return isinstance(member.value, MimeType)
 
-    # Copy methods from inherited_enum and added_enum to the new class
-    for method_name, method in {
-        **added_enum.__dict__,
-        **inherited_enum.__dict__,
-    }.items():
-        if callable(method) or isinstance(method, classmethod):
-            setattr(inherited_enum, method_name, method)
+    return extend_enum_with_methods(
+        FileType, added_enum, filter_func=is_member_mimetype
+    )
 
 
 class FileTypeExamples(Enum):
