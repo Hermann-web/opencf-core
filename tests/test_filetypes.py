@@ -100,8 +100,9 @@ class FileTypeTest(unittest.TestCase):
         self.assertFalse(FileType.EXCEL.is_valid_mime_type(text_path))
 
         # by checking only the content, all flat files identified as text/plain should match with all possible text/plain formats
+        # no need actually, while fill up the matches ? 
         self.assertTrue(FileType.TEXT.is_valid_mime_type(csv_path))
-        self.assertTrue(FileType.CSV.is_valid_mime_type(text_path))
+        self.assertFalse(FileType.CSV.is_valid_mime_type(text_path))
 
     def test_from_suffix(self):
         """Test the from_suffix method."""
@@ -262,8 +263,8 @@ class FileTypeTest(unittest.TestCase):
 
         extend_filetype_enum(FileTypeUpdate)
 
-        print(list(FileTypeUpdate))
-        print(list(FileType))
+        new_members = list(FileTypeUpdate)
+        updated_enum_members = list(FileType)
 
 
 if __name__ == "__main__":

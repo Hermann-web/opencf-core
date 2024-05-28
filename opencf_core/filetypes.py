@@ -385,7 +385,7 @@ class FileType(Enum):
             return ""
         return self.get_value().mime_types[0]
 
-    def is_valid_suffix(self, suffix: str, raise_err=False):
+    def is_valid_suffix(self, suffix: str, raise_err=False) -> bool:
         """Validates whether a given file extension matches the filetype's expected extensions.
 
         Args:
@@ -399,10 +399,9 @@ class FileType(Enum):
         Raises:
             MismatchedException: If the suffix does not match the filetype's extensions and raise_err is True.
         """
-        if not self.is_true_filetype():
-            return False
-        suffix = self.__class__.clean_suffix(suffix)
-        if suffix in self.get_value().extensions:
+        _val, matches = self.from_suffix(suffix, return_matches=True)
+        is_valid = (self == _val) if not self.is_true_filetype() else (self in matches)
+        if is_valid:
             return True
         if raise_err:
             raise MismatchedException(
@@ -414,7 +413,7 @@ class FileType(Enum):
 
     def is_valid_path(
         self, file_path: Union[str, Path], read_content=False, raise_err=False
-    ):
+    ) -> bool:
         """Validates the filetype of a given file path. Optionally reads the file's content to verify its type.
 
         Args:
@@ -435,39 +434,17 @@ class FileType(Enum):
             file_path, read_content=read_content, return_matches=True
         )
         is_valid = (self == _val) if not self.is_true_filetype() else (self in matches)
-        if raise_err and not is_valid:
-            raise MismatchedException(
-                f"suffix/mime-type ({file_path})", _val, self.get_value()
-            )
-        return is_valid
-
-    def is_valid_mimetype(self, file_mimetype: str, raise_err=False):
-        """Validates whether a given MIME type matches the filetype's expected MIME types.
-
-        Args:
-            file_mimetype (str): The MIME type to validate.
-            raise_err (bool, optional): If True, raises a MismatchedException for invalid MIME types.
-                                        Defaults to False.
-
-        Returns:
-            bool: True if the MIME type matches one of the filetype's MIME types, False otherwise.
-
-        Raises:
-            MismatchedException: If the MIME type does not match the filetype's MIME types and raise_err is True.
-        """
-        if not self.is_true_filetype():
-            return False
-        if file_mimetype in self.get_value().mime_types:
+        if is_valid:
             return True
         if raise_err:
             raise MismatchedException(
-                f"filetype ({self.name}) mismatch with mimetype ({file_mimetype})",
-                self.get_one_mimetype(),
-                file_mimetype,
+                f"suffix/mime-type ({file_path})",
+                _val,
+                self.get_value(),
             )
         return False
 
-    def is_valid_mime_type(self, file_path: Path, raise_err=False):
+    def is_valid_mime_type(self, file_path: Path, raise_err=False) -> bool:
         """
         Validates whether the MIME type of the file at the specified path aligns with the filetype's expected MIME types.
 
@@ -490,16 +467,13 @@ class FileType(Enum):
         """
         _val, matches = self.from_mimetype(file_path, return_matches=True)
         is_valid = (self == _val) if not self.is_true_filetype() else (self in matches)
-
-        # many things can be text/plain
-        if (self.TEXT in matches) and "text/plain" in self.get_value().upper_mime_types:
-            is_valid = True
-
-        if raise_err and not is_valid:
+        if is_valid:
+            return True
+        if raise_err:
             raise MismatchedException(
                 f"content-type({file_path})", _val, self.get_value().mime_types
             )
-        return is_valid
+        return False
 
 
 def extract_enum_members(enum_cls: Type) -> Dict[str, MimeType]:
