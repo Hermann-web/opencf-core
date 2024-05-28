@@ -134,9 +134,11 @@ class ResolvedInputFile:
             )
         # Create directory if it doesn't exist
         self.path.mkdir(exist_ok=True)
-        resolved_file_type = self.filetype_class.from_suffix(file_type, raise_err=True)
+        resolved_file_type, _ = self.filetype_class.from_suffix(
+            file_type, raise_err=True
+        )
         assert resolved_file_type.is_true_filetype()
-        suffix = resolved_file_type.get_suffix()
+        suffix = resolved_file_type.get_one_suffix()
         return resolved_file_type, suffix
 
     def _resolve_file_type(
@@ -156,7 +158,7 @@ class ResolvedInputFile:
         assert resolved_file_type.is_true_filetype()
 
         # Get the suffix corresponding to the resolved file type
-        suffix = resolved_file_type.get_suffix()
+        suffix = resolved_file_type.get_one_suffix()
 
         # Optionally add suffix to the file path
         if add_suffix:
@@ -182,13 +184,15 @@ class ResolvedInputFile:
             try:
                 return self.filetype_class.from_path(
                     file_path, read_content=read_content, raise_err=True
-                )
+                )[0]
             except EmptySuffixError:
                 raise ValueError("filepath suffix is emtpy but file_type not set")
 
-        resolved_file_type = self.filetype_class.from_suffix(file_type, raise_err=True)
+        resolved_file_type, _ = self.filetype_class.from_suffix(
+            file_type, raise_err=True
+        )
 
-        file_type_from_path = self.filetype_class.from_path(
+        file_type_from_path, _ = self.filetype_class.from_path(
             file_path, read_content=read_content, raise_err=False
         )
 
@@ -333,7 +337,7 @@ class BaseConverter(ABC):
                 not output_path.is_dir()
             ), f"output_path {output_path} exists as a dir while a file is required for this conversion"
             # if output_path.is_dir():
-            #     suffix = self.get_supported_output_types().get_suffix()
+            #     suffix = self.get_supported_output_types().get_one_suffix()
             #     output_path = (output_path / "opencf-output").with_suffix(suffix)
             kwargs["output_file"] = output_path
         return kwargs, output_path

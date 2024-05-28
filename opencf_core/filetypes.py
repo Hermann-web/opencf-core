@@ -36,7 +36,7 @@ from mymodule import FileType, EmptySuffixError, UnsupportedFileTypeError
 
 # Example: Determine file type from suffix
 try:
-    file_type = FileType.from_suffix('.txt')
+    file_type, _ = FileType.from_suffix('.txt')
     print(f'File type: {file_type.name}')
 except (EmptySuffixError, UnsupportedFileTypeError) as e:
     print(f'Error: {e}')
@@ -44,7 +44,7 @@ except (EmptySuffixError, UnsupportedFileTypeError) as e:
 # Example: Determine file type from MIME type
 try:
     file_path = Path('/path/to/file.txt')
-    file_type = FileType.from_mimetype(file_path)
+    file_type, _ = FileType.from_mimetype(file_path)
     print(f'File type: {file_type.name}')
 except FileNotFoundError as e:
     print(f'Error: {e}')
@@ -57,6 +57,7 @@ is_valid = FileType.TEXT.is_valid_path(file_path, read_content=True)
 print(f'Is valid: {is_valid}')
 ```
 """
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -164,49 +165,66 @@ class FileType(Enum):
         return suffix.lower().lstrip(".")
 
     @classmethod
-    def from_suffix(cls, suffix: str, raise_err: bool = False):
+    def from_suffix(
+        cls, suffix: str, raise_err: bool = False, return_matches: bool = False
+    ) -> Tuple[FileType, Tuple[FileType, ...]]:
         """Determines a filetype from a file's suffix.
 
         Args:
             suffix (str): The file suffix (extension).
             raise_err (bool, optional): Whether to raise an exception if the type is unhandled. Defaults to False.
+            return_matches (bool, optional): Whether to return a tuple with the first matching filetype and a list of all options. Defaults to False.
 
         Returns:
-            FileType: The determined filetype enumeration member.
+            FileType: The determined filetype enumeration member, or a tuple with the first matching filetype and a list of all options.
 
         Raises:
             EmptySuffixError: If the suffix is empty and raise_err is True.
             UnsupportedFileTypeError: If the file type is unhandled and raise_err is True.
         """
-
-        # get suffix
-        suffix = cls.clean_suffix(suffix)
+        suffix = suffix.lower().lstrip(".")
         if not suffix:
             if raise_err:
                 raise EmptySuffixError()
-            return cls.NOTYPE
+            return (cls.NOTYPE, tuple())
 
-        # get a valid member
+        matches = []
         for member in cls.get_filetypes():
             member_value = member.get_value()
             if member_value.extensions and suffix in member_value.extensions:
-                return member
+                if not return_matches:
+                    return (member, tuple())
+                matches.append(member)
 
-        if raise_err:
-            raise UnsupportedFileTypeError(f"Unhandled filetype from suffix={suffix}")
+        if len(matches) == 0:
+            if raise_err:
+                raise UnsupportedFileTypeError(
+                    f"Unhandled filetype from suffix={suffix}"
+                )
+            return (cls.UNHANDLED, tuple())
 
-        return cls.UNHANDLED
+        return (
+            (matches[0], tuple())
+            if not return_matches
+            else (matches[0], tuple(matches))
+        )
 
     @classmethod
-    def from_mimetype(cls, file_path: Union[str, Path], raise_err: bool = False):
+    def from_mimetype(
+        cls,
+        file_path: Union[str, Path],
+        raise_err: bool = False,
+        return_matches: bool = False,
+    ) -> Tuple[FileType, Tuple[FileType, ...]]:
         """Determines a filetype from a file's MIME type.
 
         Args:
             file_path (str): The path to the file.
             raise_err (bool, optional): Whether to raise an exception if the type is unhandled. Defaults to False.
+            return_matches (bool, optional): Whether to return a tuple with the first matching filetype and a list of all options. Defaults to False.
 
         Returns:
-            FileType: The determined filetype enumeration member.
+            FileType: The determined filetype enumeration member, or a tuple with the first matching filetype and a list of all options.
 
         Raises:
             FileNotFoundError: If the file does not exist.
@@ -219,19 +237,28 @@ class FileType(Enum):
 
         file_mimetype = guess_mime_type_from_file(str(file))
 
+        matches = []
         for member in cls.get_filetypes():
             if (
                 member.get_value().mime_types
                 and file_mimetype in member.get_value().mime_types
             ):
-                return member
+                if not return_matches:
+                    return (member, tuple())
+                matches.append(member)
 
-        if raise_err:
-            raise UnsupportedFileTypeError(
-                f"Unhandled filetype from mimetype={file_mimetype}"
-            )
-        else:
-            return cls.UNHANDLED
+        if len(matches) == 0:
+            if raise_err:
+                raise UnsupportedFileTypeError(
+                    f"Unhandled filetype from mimetype={file_mimetype}"
+                )
+            return (cls.UNHANDLED, tuple())
+
+        return (
+            (matches[0], tuple())
+            if not return_matches
+            else (matches[0], tuple(matches))
+        )
 
     # @classmethod
     # def from_content(cls, path: Path, raise_err=False):
@@ -243,7 +270,13 @@ class FileType(Enum):
     #     return member
 
     @classmethod
-    def from_path(cls, path: Path, read_content=False, raise_err=False):
+    def from_path(
+        cls,
+        path: Union[str, Path],
+        read_content=False,
+        raise_err=False,
+        return_matches=False,
+    ) -> Tuple[FileType, Tuple[FileType, ...]]:
         """Determines the filetype of a file based on its path. Optionally reads the file's content to verify its type.
 
         Args:
@@ -252,9 +285,10 @@ class FileType(Enum):
                                            Defaults to False.
             raise_err (bool, optional): If True, raises exceptions for unsupported types or when file does not exist.
                                         Defaults to False.
+            return_matches (bool, optional): Whether to return a tuple with the first matching filetype and a list of all options. Defaults to False.
 
         Returns:
-            FileType: The determined filetype enumeration member based on the file's suffix and/or content.
+            FileType: The determined filetype enumeration member based on the file's suffix and/or content, or a tuple with the first matching filetype and a list of all options.
 
         Raises:
             FileNotFoundError: If the file does not exist when attempting to read its content.
@@ -263,32 +297,60 @@ class FileType(Enum):
         """
         file_path = Path(path)
 
-        raise_err1 = raise_err and (not read_content)
-        raise_err2 = raise_err
+        raise_err_suffix: bool = raise_err and (not read_content)
+        raise_err_mimetype: bool = raise_err
 
         # get member from suffix
-        member1 = cls.from_suffix(file_path.suffix, raise_err=raise_err1)
+        filetype_from_suffix, suffix_matches = cls.from_suffix(
+            file_path.suffix, raise_err=raise_err_suffix, return_matches=True
+        )
 
         # if we're not checking the file content, return
         if not read_content:
-            return member1
+            return filetype_from_suffix, suffix_matches
 
-        # the file should exists for content reading
+        # the file should exist for content reading
         if not file_path.exists():
             raise FileNotFoundError(f"File '{file_path}' does not exist.")
 
         # get member from content
-        member2 = cls.from_mimetype(file_path, raise_err=raise_err2)
+        filetype_from_mimetype, mimetype_matches = cls.from_mimetype(
+            file_path, raise_err=raise_err_mimetype, return_matches=True
+        )
 
-        # if suffix didnt give a filetype, use the one from content
-        if not member1.is_true_filetype():
-            return member2
+        # combine results from both methods
 
-        assert (
-            member1 == member2
-        ), f"file type from suffix ({member1}) mismatch with filepath from path({member2})"
+        # if suffix didn't give a filetype, use the one from content
+        if filetype_from_suffix.is_true_filetype():
+            return (
+                (filetype_from_suffix, tuple())
+                if not return_matches
+                else (filetype_from_mimetype, mimetype_matches)
+            )
 
-        return member1
+        # if content mimetype didn't give a filetype, use the one from suffix
+        if filetype_from_mimetype.is_true_filetype():
+            return (
+                (filetype_from_suffix, tuple())
+                if not return_matches
+                else (filetype_from_suffix, suffix_matches)
+            )
+
+        # find common matches
+        common_members = tuple(m for m in suffix_matches if m in mimetype_matches)
+
+        if len(common_members) == 0:
+            if raise_err:
+                raise AssertionError(
+                    f"file type from suffix ({suffix_matches}) mismatch with file type from content ({mimetype_matches})"
+                )
+            return (cls.NOTYPE, tuple())
+
+        return (
+            (common_members[0], tuple())
+            if not return_matches
+            else (common_members[0], common_members)
+        )
 
     def is_true_filetype(self) -> bool:
         """Determines if the filetype instance represents a supported file type based on the presence of defined extensions.
@@ -298,7 +360,7 @@ class FileType(Enum):
         """
         return len(self.get_value().extensions) != 0
 
-    def get_suffix(self) -> str:
+    def get_one_suffix(self) -> str:
         """
         Retrieves the primary file extension associated with the filetype.
 
@@ -310,6 +372,18 @@ class FileType(Enum):
             return ""
         ext = self.get_value().extensions[0]
         return f".{ext}"
+
+    def get_one_mimetype(self) -> str:
+        """
+        Retrieves the primary mimetype associated with the filetype.
+
+        Returns:
+            Mimetype: The primary mimetype for the filetype.
+                 Returns an empty string if the filetype does not have an associated extension.
+        """
+        if not self.is_true_filetype():
+            return ""
+        return self.get_value().mime_types[0]
 
     def is_valid_suffix(self, suffix: str, raise_err=False):
         """Validates whether a given file extension matches the filetype's expected extensions.
@@ -332,7 +406,9 @@ class FileType(Enum):
             return True
         if raise_err:
             raise MismatchedException(
-                f"filetype ({self.name}) mismatch with suffix ({suffix})"
+                f"filetype ({self.name}) mismatch with suffix ({suffix})",
+                suffix,
+                self.get_one_suffix(),
             )
         return False
 
@@ -355,13 +431,41 @@ class FileType(Enum):
             AssertionError: If there is a mismatch between the file type determined from the file's suffix and its content.
             MismatchedException: If the file type determined from the file's suffix or content does not match the filetype.
         """
-        _val = self.from_path(path, read_content=read_content)
-        is_valid = _val == self
+        _val, matches = self.from_path(
+            file_path, read_content=read_content, return_matches=True
+        )
+        is_valid = (self == _val) if not self.is_true_filetype() else (self in matches)
         if raise_err and not is_valid:
             raise MismatchedException(
-                f"suffix/mime-type ({path})", _val, self.get_value()
+                f"suffix/mime-type ({file_path})", _val, self.get_value()
             )
         return is_valid
+
+    def is_valid_mimetype(self, file_mimetype: str, raise_err=False):
+        """Validates whether a given MIME type matches the filetype's expected MIME types.
+
+        Args:
+            file_mimetype (str): The MIME type to validate.
+            raise_err (bool, optional): If True, raises a MismatchedException for invalid MIME types.
+                                        Defaults to False.
+
+        Returns:
+            bool: True if the MIME type matches one of the filetype's MIME types, False otherwise.
+
+        Raises:
+            MismatchedException: If the MIME type does not match the filetype's MIME types and raise_err is True.
+        """
+        if not self.is_true_filetype():
+            return False
+        if file_mimetype in self.get_value().mime_types:
+            return True
+        if raise_err:
+            raise MismatchedException(
+                f"filetype ({self.name}) mismatch with mimetype ({file_mimetype})",
+                self.get_one_mimetype(),
+                file_mimetype,
+            )
+        return False
 
     def is_valid_mime_type(self, file_path: Path, raise_err=False):
         """
@@ -384,11 +488,11 @@ class FileType(Enum):
             MismatchedException: If raise_err is True and the file's MIME type does not match the expected MIME types
                                 for this filetype instance, including detailed information about the mismatch.
         """
-        _val = self.from_mimetype(file_path)
-        is_valid = _val == self
+        _val, matches = self.from_mimetype(file_path, return_matches=True)
+        is_valid = (self == _val) if not self.is_true_filetype() else (self in matches)
 
         # many things can be text/plain
-        if _val == self.TEXT and "text/plain" in self.get_value().upper_mime_types:
+        if (self.TEXT in matches) and "text/plain" in self.get_value().upper_mime_types:
             is_valid = True
 
         if raise_err and not is_valid:
