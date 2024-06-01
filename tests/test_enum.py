@@ -10,8 +10,8 @@ class TestExtendEnumMethods(unittest.TestCase):
         new_file_type = Enum(
             "NewFileType",
             {
-                "new_file_type1": MimeType(("json",), ("application/json",)),
-                "new_file_type2": MimeType(("pdf",), ("application/pdf",)),
+                "new_file_type1": MimeType(("j5",), ("application/json",)),
+                "new_file_type2": MimeType(("pno",), ("application/pdf",)),
             },
         )
 

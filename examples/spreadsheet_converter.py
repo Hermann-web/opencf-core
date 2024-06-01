@@ -28,7 +28,7 @@ class XLXSToCSVConverter(BaseConverter):
 
     @classmethod
     def _get_supported_input_types(cls) -> FileType:
-        return FileType.EXCEL
+        return [FileType.XLSX, FileType.XLS]
 
     @classmethod
     def _get_supported_output_types(cls) -> FileType:

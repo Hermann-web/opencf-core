@@ -20,7 +20,7 @@ class TXTToMDConverter(BaseConverter):
 
     @classmethod
     def _get_supported_output_types(cls) -> FileType:
-        return FileType.MARKDOWN
+        return FileType.MD
 
     def _convert(self, input_contents: List[str]):
         md_content = "\n".join(input_contents)

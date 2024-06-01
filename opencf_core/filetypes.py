@@ -77,6 +77,14 @@ class MimeType:
     upper_mime_types: Tuple[str, ...] = ()
 
 
+def merge_mimetype(*mimetypes: MimeType) -> MimeType:
+    """Merge multiple MimeType objects into one."""
+    extensions = sum((m.extensions for m in mimetypes), ())
+    mime_types = sum((m.mime_types for m in mimetypes), ())
+    upper_mime_types = sum((m.upper_mime_types for m in mimetypes), ())
+    return MimeType(extensions, mime_types, upper_mime_types)
+
+
 class FileType(Enum):
     """Base enumeration for file types, providing methods for type determination and validation.
 
@@ -101,29 +109,69 @@ class FileType(Enum):
     TEXT = MimeType(("txt",), ("text/plain",))
     UNHANDLED: MimeType = MimeType()
 
-    # other members
-    CSV = MimeType(("csv",), ("text/csv",), ("text/plain",))
-    MARKDOWN = MimeType(("md",), ("text/markdown",), ("text/plain",))
+    # raster images
+    PNG = MimeType(("png",), ("image/png",))
+    JPEG = MimeType(("jpeg", "jpg"), ("image/jpeg",))
+    TIFF = MimeType(("tiff",), ("image/tiff",))
+    IMG_RASTER = merge_mimetype(PNG, JPEG, TIFF)
 
-    EXCEL = MimeType(
-        ("xls", "xlsx"),
-        (
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ),
-    )
-    MSWORD = MimeType(
-        ("docx", "doc"),
-        (
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/msword",
-        ),
-    )
-    JSON = MimeType(("json",), ("application/json",))
-    PDF = MimeType(("pdf",), ("application/pdf",))
-    IMAGE = MimeType(("jpg", "jpeg", "png"), ("image/jpeg", "image/png"))
+    # animated images
     GIF = MimeType(("gif",), ("image/gif",))
-    VIDEO = MimeType(("mp4", "avi"), ("video/mp4", "video/x-msvideo"))
+    APNG = MimeType(("apng",), ("image/apng",))
+    WEBP = MimeType(("webp",), ("image/webp",))
+    IMG_ANIM = merge_mimetype(GIF, APNG, WEBP)
+
+    # vectoriel images
+    SVG = MimeType(("svg",), ("image/svg+xml",))
+    EPS = MimeType(("eps",), ("application/postscript",))
+    IMG_VEC = merge_mimetype(SVG, EPS)
+
+    # sequence of images
+    EXR = MimeType(("exr",), ("image/aces-exr",))
+    DPX = MimeType(("dpx",), ("image/dpx",))
+    IMG_SEQ = merge_mimetype(EXR, DPX, TIFF)
+
+    # video
+    MP4 = MimeType(("mp4",), ("video/mp4",))
+    MOV = MimeType(("mov",), ("video/quicktime", "video/wbm"))
+    AVI = MimeType(("avi",), ("video/x-msvideo",))
+    WMV = MimeType(("wmv",), ("video/x-ms-wmv",))
+    VIDEO = merge_mimetype(MP4, MOV, AVI, WMV)
+
+    # text document
+    DOCX = MimeType(
+        ("docx",),
+        ("application/vnd.openxmlformats-officedocument.wordprocessingml.document",),
+    )
+    ODT = MimeType(("odt",), ("application/vnd.oasis.opendocument.text",))
+    DOC = MimeType(("doc",), ("application/msword",))
+    MD = MimeType(("md",), ("text/markdown",), ("text/plain",))
+    DOC_TEXT = merge_mimetype(DOCX, ODT, DOC, MD)
+
+    # spreadsheet document
+    XLSX = MimeType(
+        ("xlsx",),
+        ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",),
+    )
+    ODS = MimeType(("ods",), ("application/vnd.oasis.opendocument.spreadsheet",))
+    CSV = MimeType(("csv",), ("text/csv",), ("text/plain",))
+    XLS = MimeType(("xls",), ("application/vnd.ms-excel",))
+    DOC_SPREADSHEET = merge_mimetype(XLSX, ODS, CSV, XLS)
+
+    # presentation documents
+    PPTX = MimeType(
+        ("pptx",),
+        ("application/vnd.openxmlformats-officedocument.presentationml.presentation",),
+    )
+    ODP = MimeType(("odp",), ("application/vnd.oasis.opendocument.presentation",))
+    PPT = MimeType(("ppt",), ("application/vnd.ms-powerpoint",))
+    PDF = MimeType(("pdf",), ("application/pdf",))
+    DOC_PRESENTATION = merge_mimetype(PPTX, ODP, PPT, PDF)
+
+    # Other formats
+    BIN = MimeType(("bin",), ("application/octet-stream",))
+    JSON = MimeType(("json",), ("application/json",))
+    HTML = MimeType(("html", "htm"), ("text/html",))
 
     def get_value(self) -> MimeType:
         """Returns the `MimeType` associated with the enumeration member.
@@ -163,7 +211,7 @@ class FileType(Enum):
             EmptySuffixError: If the suffix is empty and raise_err is True.
             UnsupportedFileTypeError: If the file type is unhandled and raise_err is True.
         """
-        suffix = suffix.lower().lstrip(".")
+        suffix = cls.clean_suffix(suffix=suffix)
         if not suffix:
             if raise_err:
                 raise EmptySuffixError()

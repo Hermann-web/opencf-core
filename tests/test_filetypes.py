@@ -26,9 +26,9 @@ class FileTypeTest(unittest.TestCase):
 
         self.assertEqual(FileType.from_path(text_path)[0], FileType.TEXT)
         self.assertEqual(FileType.from_path(csv_path)[0], FileType.CSV)
-        self.assertEqual(FileType.from_path(excel_path)[0], FileType.EXCEL)
+        self.assertEqual(FileType.from_path(excel_path)[0], FileType.XLSX)
         self.assertEqual(FileType.from_path(json_path)[0], FileType.JSON)
-        self.assertEqual(FileType.from_path(img_path)[0], FileType.IMAGE)
+        self.assertEqual(FileType.from_path(img_path)[0], FileType.JPEG)
         self.assertEqual(FileType.from_path(Path("no_extension"))[0], FileType.NOTYPE)
         self.assertEqual(FileType.from_path(Path("unknown.xyz"))[0], FileType.UNHANDLED)
 
@@ -47,14 +47,18 @@ class FileTypeTest(unittest.TestCase):
         self.assertTrue(FileType.CSV.is_valid_path(csv_path))
         self.assertFalse(FileType.CSV.is_valid_path(excel_path))
 
-        self.assertTrue(FileType.EXCEL.is_valid_path(excel_path))
-        self.assertFalse(FileType.EXCEL.is_valid_path(json_path))
+        self.assertTrue(FileType.XLSX.is_valid_path(excel_path))
+        self.assertFalse(FileType.XLSX.is_valid_path(json_path))
+        self.assertTrue(FileType.DOC_SPREADSHEET.is_valid_path(excel_path))
+        self.assertFalse(FileType.DOC_SPREADSHEET.is_valid_path(json_path))
 
         self.assertTrue(FileType.JSON.is_valid_path(json_path))
         self.assertFalse(FileType.JSON.is_valid_path(img_path))
 
-        self.assertTrue(FileType.IMAGE.is_valid_path(img_path))
-        self.assertFalse(FileType.IMAGE.is_valid_path(text_path))
+        self.assertTrue(FileType.JPEG.is_valid_path(img_path))
+        self.assertFalse(FileType.JPEG.is_valid_path(text_path))
+        self.assertTrue(FileType.IMG_RASTER.is_valid_path(img_path))
+        self.assertFalse(FileType.IMG_RASTER.is_valid_path(text_path))
 
         self.assertTrue(FileType.NOTYPE.is_valid_path(Path("no_extension")))
         self.assertFalse(FileType.NOTYPE.is_valid_path(text_path))
@@ -94,12 +98,14 @@ class FileTypeTest(unittest.TestCase):
 
         # the mimetype should be valid
         self.assertTrue(FileType.TEXT.is_valid_mime_type(text_path))
-        self.assertTrue(FileType.EXCEL.is_valid_mime_type(xlsx_path))
+        self.assertTrue(FileType.XLSX.is_valid_mime_type(xlsx_path))
+        self.assertTrue(FileType.DOC_SPREADSHEET.is_valid_mime_type(xlsx_path))
         self.assertTrue(FileType.XML.is_valid_mime_type(xml_path))
 
         # the mimetype should be invalid
         self.assertFalse(FileType.TEXT.is_valid_mime_type(xlsx_path))
-        self.assertFalse(FileType.EXCEL.is_valid_mime_type(text_path))
+        self.assertFalse(FileType.XLSX.is_valid_mime_type(text_path))
+        self.assertFalse(FileType.DOC_SPREADSHEET.is_valid_mime_type(text_path))
 
         # by checking only the content, all flat files identified as text/plain should match with all possible text/plain formats
         # no need actually, while fill up the matches ?
@@ -115,9 +121,9 @@ class FileTypeTest(unittest.TestCase):
         """Test the from_suffix method."""
         self.assertEqual(FileType.from_suffix(".txt")[0], FileType.TEXT)
         self.assertEqual(FileType.from_suffix(".csv")[0], FileType.CSV)
-        self.assertEqual(FileType.from_suffix(".xlsx")[0], FileType.EXCEL)
+        self.assertEqual(FileType.from_suffix(".xlsx")[0], FileType.XLSX)
         self.assertEqual(FileType.from_suffix(".json")[0], FileType.JSON)
-        self.assertEqual(FileType.from_suffix(".jpg")[0], FileType.IMAGE)
+        self.assertEqual(FileType.from_suffix(".jpg")[0], FileType.JPEG)
         self.assertEqual(FileType.from_suffix(".xml")[0], FileType.XML)
         self.assertEqual(FileType.from_suffix(".unknown")[0], FileType.UNHANDLED)
         self.assertEqual(FileType.from_suffix("")[0], FileType.NOTYPE)
@@ -146,9 +152,9 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_mimetype(text_path)[0], FileType.TEXT)
         # Need to handle csv vs plain
         # self.assertEqual(FileType.from_mimetype(csv_path), (FileType.CSV, (FileType.CSV, FileType.TEXT)))
-        self.assertEqual(FileType.from_mimetype(xlsx_path)[0], FileType.EXCEL)
+        self.assertEqual(FileType.from_mimetype(xlsx_path)[0], FileType.XLSX)
         self.assertEqual(FileType.from_mimetype(json_path)[0], FileType.JSON)
-        self.assertEqual(FileType.from_mimetype(img_path)[0], FileType.IMAGE)
+        self.assertEqual(FileType.from_mimetype(img_path)[0], FileType.JPEG)
         self.assertEqual(FileType.from_mimetype(xml_path)[0], FileType.XML)
 
         # Test with return_matches=True
@@ -174,9 +180,9 @@ class FileTypeTest(unittest.TestCase):
 
         self.assertEqual(FileType.from_path(text_path)[0], FileType.TEXT)
         self.assertEqual(FileType.from_path(csv_path)[0], FileType.CSV)
-        self.assertEqual(FileType.from_path(xlsx_path)[0], FileType.EXCEL)
+        self.assertEqual(FileType.from_path(xlsx_path)[0], FileType.XLSX)
         self.assertEqual(FileType.from_path(json_path)[0], FileType.JSON)
-        self.assertEqual(FileType.from_path(img_path)[0], FileType.IMAGE)
+        self.assertEqual(FileType.from_path(img_path)[0], FileType.JPEG)
         self.assertEqual(FileType.from_path(xml_path)[0], FileType.XML)
 
         # Test read_content=True
@@ -188,13 +194,14 @@ class FileTypeTest(unittest.TestCase):
             FileType.from_path(csv_path, read_content=True)[0], FileType.CSV
         )
         self.assertEqual(
-            FileType.from_path(xlsx_path, read_content=True)[0], FileType.EXCEL
+            FileType.from_path(xlsx_path, read_content=True)[0],
+            FileType.XLSX,
         )
         self.assertEqual(
             FileType.from_path(json_path, read_content=True)[0], FileType.JSON
         )
         self.assertEqual(
-            FileType.from_path(img_path, read_content=True)[0], FileType.IMAGE
+            FileType.from_path(img_path, read_content=True)[0], FileType.JPEG
         )
         self.assertEqual(
             FileType.from_path(xml_path, read_content=True)[0], FileType.XML
@@ -237,9 +244,9 @@ class FileTypeTest(unittest.TestCase):
         filetypes = list(FileType.get_filetypes())
         self.assertIn(FileType.TEXT, filetypes)
         self.assertIn(FileType.CSV, filetypes)
-        self.assertIn(FileType.EXCEL, filetypes)
+        self.assertIn(FileType.DOC_SPREADSHEET, filetypes)
         self.assertIn(FileType.JSON, filetypes)
-        self.assertIn(FileType.IMAGE, filetypes)
+        self.assertIn(FileType.IMG_RASTER, filetypes)
         self.assertIn(FileType.NOTYPE, filetypes)
         self.assertIn(FileType.UNHANDLED, filetypes)
 
@@ -247,13 +254,57 @@ class FileTypeTest(unittest.TestCase):
         """Test edge cases for file extensions."""
         self.assertEqual(FileType.from_suffix(".TXT"), (FileType.TEXT, tuple()))
         self.assertEqual(FileType.from_suffix(".Csv"), (FileType.CSV, tuple()))
-        self.assertEqual(FileType.from_suffix(".XLSX"), (FileType.EXCEL, tuple()))
+        self.assertEqual(FileType.from_suffix(".XLSX"), (FileType.XLSX, tuple()))
         self.assertEqual(FileType.from_suffix(".JsOn"), (FileType.JSON, tuple()))
-        self.assertEqual(FileType.from_suffix(".JPG"), (FileType.IMAGE, tuple()))
-        self.assertEqual(FileType.from_suffix(".jpeg"), (FileType.IMAGE, tuple()))
-        self.assertEqual(FileType.from_suffix(".docx"), (FileType.MSWORD, tuple()))
+        self.assertEqual(FileType.from_suffix(".JPG"), (FileType.JPEG, tuple()))
+        self.assertEqual(FileType.from_suffix(".jpeg"), (FileType.JPEG, tuple()))
+        self.assertEqual(FileType.from_suffix(".docx"), (FileType.DOCX, tuple()))
         self.assertEqual(FileType.from_suffix(".xml"), (FileType.XML, tuple()))
         self.assertEqual(FileType.from_suffix(".r"), (FileType.UNHANDLED, tuple()))
+
+        # test with return matches
+        self.assertEqual(
+            FileType.from_suffix(".JsOn", return_matches=True),
+            (FileType.JSON, (FileType.JSON,)),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".JPG", return_matches=True),
+            (
+                FileType.JPEG,
+                (
+                    FileType.JPEG,
+                    FileType.IMG_RASTER,
+                ),
+            ),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".jpeg", return_matches=True),
+            (
+                FileType.JPEG,
+                (
+                    FileType.JPEG,
+                    FileType.IMG_RASTER,
+                ),
+            ),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".docx", return_matches=True),
+            (
+                FileType.DOCX,
+                (
+                    FileType.DOCX,
+                    FileType.DOC_TEXT,
+                ),
+            ),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".xml", return_matches=True),
+            (FileType.XML, (FileType.XML,)),
+        )
+        self.assertEqual(
+            FileType.from_suffix(".r", return_matches=True),
+            (FileType.UNHANDLED, tuple()),
+        )
 
     def test_invalid_paths(self):
         """Test invalid file paths."""
@@ -268,9 +319,9 @@ class FileTypeTest(unittest.TestCase):
         """Test that file type detection is case insensitive."""
         self.assertEqual(FileType.from_suffix(".Txt")[0], FileType.TEXT)
         self.assertEqual(FileType.from_suffix(".CSv")[0], FileType.CSV)
-        self.assertEqual(FileType.from_suffix(".Xlsx")[0], FileType.EXCEL)
+        self.assertEqual(FileType.from_suffix(".Xlsx")[0], FileType.XLSX)
         self.assertEqual(FileType.from_suffix(".jSoN")[0], FileType.JSON)
-        self.assertEqual(FileType.from_suffix(".Jpg")[0], FileType.IMAGE)
+        self.assertEqual(FileType.from_suffix(".Jpg")[0], FileType.JPEG)
 
     def test_special_characters_in_path(self):
         """Test paths with special characters."""
