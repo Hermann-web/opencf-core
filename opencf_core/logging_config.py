@@ -100,6 +100,15 @@ class LoggerConfig:
         if self.logger:
             self.logger.setLevel(level)
 
+    def set_log_level_str(self, level: str) -> None:
+        """Set log level.
+
+        Args:
+            level (str): Logging level.
+        """
+        parsed_level: int = logging._nameToLevel[level.upper()]
+        self.set_log_level(parsed_level)
+
 
 # Create an instance of LoggerConfig
 logger_config: LoggerConfig = LoggerConfig()

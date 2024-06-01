@@ -5,17 +5,13 @@ This module contains the main application logic.
 """
 
 import argparse
-import sys
 
 from simple_converter import TXTToMDConverter, TXTToTXTConverter
-
-sys.path.append(".")
 
 from opencf_core.converter_app import BaseConverterApp
 
 
 class ConverterApp(BaseConverterApp):
-
     converters = [TXTToMDConverter, TXTToTXTConverter]
 
 

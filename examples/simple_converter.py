@@ -1,16 +1,15 @@
-import sys
 from pathlib import Path
 from typing import List
 
-sys.path.append(".")
-
 from opencf_core.base_converter import BaseConverter, ResolvedInputFile
 from opencf_core.filetypes import FileType
-from opencf_core.io_handler import FileReader, StrToTxtWriter, TxtToStrReader
+from opencf_core.io_handler import StrToTxtWriter, TxtToStrReader
+from opencf_core.logging_config import logger_config
+
+logger_config.set_log_level_str(level="debug")
 
 
 class TXTToMDConverter(BaseConverter):
-
     file_reader = TxtToStrReader()
     file_writer = StrToTxtWriter()
 
@@ -28,7 +27,6 @@ class TXTToMDConverter(BaseConverter):
 
 
 class TXTToTXTConverter(BaseConverter):
-
     file_reader = TxtToStrReader()
     # no file writer means the converter will handle the saving
     folder_as_output = False
@@ -56,8 +54,8 @@ if __name__ == "__main__":
         output_file_path, is_dir=False, should_exist=False, add_suffix=True
     )
 
-    converter = TXTToMDConverter(input_file, output_file)
-    converter.convert()
+    converter1 = TXTToMDConverter(input_file, output_file)
+    converter1.convert()
 
-    converter = TXTToTXTConverter(input_file, input_file)
-    converter.convert()
+    converter2 = TXTToTXTConverter(input_file, input_file)
+    converter2.convert()

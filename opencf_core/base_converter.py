@@ -72,6 +72,7 @@ class ResolvedInputFile:
             self.file_type, self.suffix = self._resolve_directory_type(file_type)
             self.is_dir = True
         else:
+            logger.debug("file_type set by user = %s", file_type)
             self.file_type, self.suffix = self._resolve_file_type(
                 file_type, read_content, add_suffix
             )
@@ -87,24 +88,24 @@ class ResolvedInputFile:
         Returns:
             bool: True if the path is determined to be a directory, False if it is a file.
         """
-        filesuffix_set = self.path.suffix != ""
-        filetype_set = file_type is not None
+        is_filesuffix_set = self.path.suffix != ""
+        is_filetype_set = file_type is not None
 
         if self.path.exists():
             # Check if the existing path is a directory
             is_dir = self.path.is_dir()
             logger.debug(f"Path exists. Setting is_dir to {is_dir}.")
-        elif not filesuffix_set and filetype_set:
+        elif is_filesuffix_set:
+            # If a suffix is present, assume it's a file
+            is_dir = False
+            logger.debug("Suffix found. Assuming file. Setting is_dir to False.")
+        elif is_filetype_set:
             # If there's no suffix and a file_type is specified, assume it's a directory and create it
             self.path.mkdir(parents=False, exist_ok=True)
             is_dir = True
             logger.debug(
                 "No suffix found and file_type is specified. Assuming directory and creating it. Setting is_dir to True."
             )
-        elif filesuffix_set:
-            # If a suffix is present, assume it's a file
-            is_dir = False
-            logger.debug("Suffix found. Assuming file. Setting is_dir to False.")
         else:
             # If the method cannot determine whether the path is for a file or directory, raise an error
             raise ValueError(
@@ -121,7 +122,7 @@ class ResolvedInputFile:
 
         elif not should_exist and self.path.exists():
             logger.warning(
-                f"The specified file or folder '{self.path}' does exist, but existence is not required."
+                f"The specified file or folder '{self.path}' already exist, but existence is not required."
             )
 
     def _resolve_directory_type(self, file_type: str):
@@ -155,7 +156,10 @@ class ResolvedInputFile:
         resolved_file_type = self.__resolve_filetype__(
             file_type, self.path, read_content
         )
-        assert resolved_file_type.is_true_filetype()
+        logger.debug("resolved_file_type %s", resolved_file_type)
+        assert (
+            resolved_file_type.is_true_filetype()
+        ), f"unable to resolve filetype for path={self.path.name} file_type={file_type},read_content={read_content}"
 
         # Get the suffix corresponding to the resolved file type
         suffix = resolved_file_type.get_one_suffix()
@@ -335,7 +339,7 @@ class BaseConverter(ABC):
         else:
             assert (
                 not output_path.is_dir()
-            ), f"output_path {output_path} exists as a dir while a file is required for this conversion"
+            ), f"the provided or resolved output path ('{output_path}') already exist as a dir while a file is required for this conversion"
             # if output_path.is_dir():
             #     suffix = self.get_supported_output_types().get_one_suffix()
             #     output_path = (output_path / "opencf-output").with_suffix(suffix)
@@ -439,7 +443,7 @@ class BaseConverter(ABC):
 
     @classmethod
     @abstractmethod
-    def _get_supported_input_types(cls) -> Iterable[FileType]:
+    def _get_supported_input_types(cls) -> Union[FileType, Iterable[FileType]]:
         """
         Abstract method to define the supported input file types by the converter.
 
@@ -452,7 +456,7 @@ class BaseConverter(ABC):
 
     @classmethod
     @abstractmethod
-    def _get_supported_output_types(cls) -> Iterable[FileType]:
+    def _get_supported_output_types(cls) -> Union[FileType, Iterable[FileType]]:
         """
         Abstract method to define the supported output file types by the converter.
 

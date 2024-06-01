@@ -29,7 +29,6 @@ Conversely, indirect conversion employs a converter that supports a dedicated wr
 The file conversion process can be dissected into three distinct instances:
 
 - **Reader**: Handles input-output (IO) operations, transforming files into objects. Readers are implementations of the abstract class `FileReader` present in `io_handler.py`.
-  
 - **Converter**: Facilitates object-to-object conversion, acting as an intermediary for data transformation. Converters are implementations of the abstract class `BaseConverter` present in `base_converter.py`.
 
 - **Writer (Optional)**: Reverses the IO process, converting objects back into files. Writers are implementations of the abstract class `FileWriter` present in `io_handler.py`.
@@ -44,10 +43,7 @@ The file conversion process can be dissected into three distinct instances:
 ## Installation
 
 ```bash
-# with pip
-pip install -i https://test.pypi.org/simple/opencf-core
-# with poetry
-poetry add opencf-core --source test-pypi
+pip install opencf-core
 ```
 
 ## Usage
@@ -93,6 +89,8 @@ The `examples` folder in this repository contains practical demonstrations of ho
 - **cli_app_example.py**: Illustrates how to build a command-line interface (CLI) application using the `ConverterApp` class from the `opencf-core.converter_app` module. This CLI app allows users to specify input and output files, as well as input and output file types, for performing file conversions.
 
 These examples serve as practical demonstrations of how to leverage the capabilities of the `opencf-core` package in real-world scenarios. Users can refer to these examples for guidance on building their own file conversion utilities or integrating file conversion functionality into existing projects.
+
+You can have a more practical insight by reading the [support associated to the examples](./examples/readme.md)
 
 ## Todo
 

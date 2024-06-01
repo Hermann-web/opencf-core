@@ -51,7 +51,7 @@ class BaseConverterApp:
             raise ValueError("input_paths should not be a empty list")
 
         input_file_paths = get_filepaths_from_inputs(input_paths)
-
+        logger.debug("input_file_paths = %s", input_file_paths)
         self.input_files = [
             ResolvedInputFile(
                 input_file_path,
@@ -151,7 +151,7 @@ class BaseConverterApp:
         )
 
         # make sure a converter class exists
-        if converter_classes is None:
+        if len(converter_classes) == 0:
             _ = "\n " + "\n ".join(
                 map(lambda x: f"* {x[0]} -> {x[1]}", self.get_supported_conversions())
             )
@@ -184,4 +184,4 @@ class BaseConverterApp:
 
         # If none of the converter classes succeeded, log an error
         if not conversion_successful:
-            logger.error("All conversion attempts failed.")
+            logger.error(f"All {len(converter_classes)} conversion attempts failed.")
