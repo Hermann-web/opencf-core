@@ -17,7 +17,19 @@ Submodules
    :show-inheritance:
 
 
+.. automodule:: opencf_core.enum
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: opencf_core.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. automodule:: opencf_core.file_handler
    :members:
    :undoc-members:
    :show-inheritance:
