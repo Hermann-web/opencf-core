@@ -52,13 +52,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Tuple, Type, Union
 
-from opencf_core.enum import Enum, extend_enum_with_methods
-from opencf_core.exceptions import (
-    EmptySuffixError,
-    MismatchedException,
-    UnsupportedFileTypeError,
-)
-
+from .enum import Enum, extend_enum_with_methods
+from .exceptions import EmptySuffixError, MismatchedException, UnsupportedFileTypeError
 from .mimes import guess_mime_type_from_file
 
 

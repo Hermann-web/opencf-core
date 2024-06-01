@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import List
 
-from opencf_core.base_converter import BaseConverter, ResolvedInputFile
+from opencf_core.base_converter import BaseConverter
+from opencf_core.file_handler import ResolvedInputFile
 from opencf_core.filetypes import FileType
-from opencf_core.io_handler import StrToTxtWriter, TxtToStrReader
+from opencf_core.io_handler import FileWriter, StrToTxtWriter, TxtToStrReader
 from opencf_core.logging_config import logger_config
 
 logger_config.set_log_level_str(level="debug")
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     )
 
     converter1 = TXTToMDConverter(input_file, output_file)
-    converter1.convert()
+    converter1.run_conversion()
 
     converter2 = TXTToTXTConverter(input_file, input_file)
-    converter2.convert()
+    converter2.run_conversion()

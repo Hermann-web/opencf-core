@@ -9,11 +9,11 @@ from itertools import product
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
-from opencf_core.utils import get_filepaths_from_inputs
-
-from .base_converter import BaseConverter, ResolvedInputFile
+from .base_converter import BaseConverter
+from .file_handler import ResolvedInputFile
 from .filetypes import FileType
 from .logging_config import logger
+from .utils import get_filepaths_from_inputs
 
 
 class BaseConverterApp:
@@ -172,7 +172,7 @@ class BaseConverterApp:
                 converter = converter_class(self.input_files, self.output_file)
 
                 # Run the conversion pipeline
-                converter.convert()
+                converter.run_conversion()
 
                 # Set the flag to indicate success
                 conversion_successful = True
