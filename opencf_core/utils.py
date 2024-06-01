@@ -11,12 +11,11 @@ def is_iterable(obj):
 def ensure_iterable(obj, raise_err=True, return_single=False):
     if isinstance(obj, Iterable):
         return obj
-    elif raise_err:
+    if raise_err:
         raise TypeError(f"{obj} is not iterable")
-    elif return_single:
+    if return_single:
         return (obj,)
-    else:
-        return tuple()
+    return tuple()
 
 
 def get_filepaths_from_inputs(args: List[str]) -> List[str]:

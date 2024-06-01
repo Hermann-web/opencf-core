@@ -46,7 +46,7 @@ class TXTToTXTConverter(BaseConverter):
         output_file.write_text(md_content)
 
 
-if __name__ == "__main__":
+def main():
     input_file_path = "examples/data/example.txt"
     output_file_path = "examples/data/example.md"
 
@@ -60,3 +60,7 @@ if __name__ == "__main__":
 
     converter2 = TXTToTXTConverter(input_file, input_file)
     converter2.run_conversion()
+
+
+if __name__ == "__main__":
+    main()

@@ -89,8 +89,6 @@ class FileTypeTest(unittest.TestCase):
 
     def test_is_valid_mime_type(self):
         """Test the is_valid_mime_type method."""
-        DATA_FOLDER = Path("examples/data")
-        assert DATA_FOLDER.exists()
         text_path = Path(DATA_FOLDER / "example.txt")
         csv_path = Path(DATA_FOLDER / "example.csv")
         xlsx_path = Path(DATA_FOLDER / "example.xlsx")
@@ -140,8 +138,6 @@ class FileTypeTest(unittest.TestCase):
 
     def test_from_mimetype(self):
         """Test the from_mimetype method."""
-        DATA_FOLDER = Path("examples/data")
-        assert DATA_FOLDER.exists()
         text_path = Path(DATA_FOLDER / "example.txt")
         # csv_path = Path(DATA_FOLDER / "example.csv")
         xlsx_path = Path(DATA_FOLDER / "example.xlsx")

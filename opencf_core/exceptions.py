@@ -4,7 +4,6 @@ Classes:
 - UnsupportedFileTypeError: Custom exception for handling unsupported file types.
 - EmptySuffixError: Specialized exception for cases where a file's suffix does not provide enough information
                     to determine its type.
-- FileNotFoundError: Raised when a specified file does not exist.
 - MismatchedException: Exception for handling cases where there's a mismatch between expected and actual file attributes.
 """
 
@@ -24,15 +23,6 @@ class EmptySuffixError(UnsupportedFileTypeError):
     def __init__(self):
         self.message = "Filetype not parsed from empty suffix."
         super().__init__(self.message)
-
-
-class FileNotFoundError(Exception):
-    """Exception raised when the specified file cannot be found."""
-
-    def __init__(self, file_path):
-        self.file_path = file_path
-        message = f"File '{file_path}' does not exist."
-        super().__init__(message)
 
 
 class MismatchedException(Exception):
