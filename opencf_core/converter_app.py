@@ -9,6 +9,8 @@ from itertools import product
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
+from opencf_core.utils import get_filepaths_from_inputs
+
 from .base_converter import BaseConverter, ResolvedInputFile
 from .filetypes import FileType
 from .logging_config import logger
@@ -24,7 +26,7 @@ class BaseConverterApp:
 
     def __init__(
         self,
-        input_file_paths: List[str],
+        input_paths: List[str],
         input_file_type: Optional[str] = None,
         output_file_path: Optional[str] = None,
         output_file_type: Optional[str] = None,
@@ -33,7 +35,7 @@ class BaseConverterApp:
         Initializes the BaseConverterApp instance.
 
         Args:
-            input_file_paths (List[str]): List of paths to the input files.
+            input_paths (List[str]): List of paths to the input files.
             input_file_type (FileType, optional): The type of the input file. Defaults to None.
             output_file_path (str, optional): The path to the output file. Defaults to None.
             output_file_type (FileType, optional): The type of the output file. Defaults to None.
@@ -43,10 +45,12 @@ class BaseConverterApp:
             Tuple[FileType, FileType], List[Type[BaseConverter]]
         ] = defaultdict(list)
 
-        if not isinstance(input_file_paths, list):
-            raise TypeError("input_file_paths sould be a list")
-        if len(input_file_paths) == 0:
-            raise ValueError("input_file_paths should not be a empty list")
+        if not isinstance(input_paths, list):
+            raise TypeError("input_paths sould be a list")
+        if len(input_paths) == 0:
+            raise ValueError("input_paths should not be a empty list")
+
+        input_file_paths = get_filepaths_from_inputs(input_paths)
 
         self.input_files = [
             ResolvedInputFile(
