@@ -28,14 +28,14 @@ Conversely, indirect conversion employs a converter that supports a dedicated wr
 
 The file conversion process can be dissected into three distinct instances:
 
-- **Reader**: Handles input-output (IO) operations, transforming files into objects. Readers are implementations of the abstract class `FileReader` present in `io_handler.py`.
+- **Reader**: Handles input-output (IO) operations, transforming files into objects. Readers are implementations of the abstract class `Reader` present in `io_handler.py`.
 - **Converter**: Facilitates object-to-object conversion, acting as an intermediary for data transformation. Converters are implementations of the abstract class `BaseConverter` present in `base_converter.py`.
 
-- **Writer (Optional)**: Reverses the IO process, converting objects back into files. Writers are implementations of the abstract class `FileWriter` present in `io_handler.py`.
+- **Writer (Optional)**: Reverses the IO process, converting objects back into files. Writers are implementations of the abstract class `Writer` present in `io_handler.py`.
 
 ## Modules
 
-- **io_handler.py**: Contains classes for reading from and writing to files, including text, CSV, JSON, XML, and image files. It includes abstract classes for `FileReader` and `FileWriter`.
+- **io_handler.py**: Contains classes for reading from and writing to files, including text, CSV, JSON, XML, and image files. It includes abstract classes for `Reader` and `Writer`.
 - **mimes.py**: Provides a MIME type guesser utility for detecting file MIME types based on file content.
 - **filetypes.py**: Defines enums and classes for representing different file types and handling file type validation.
 - **base_converter.py**: Implements the base converter class and the resolved input file class for performing file conversion tasks. It includes the `BaseConverter` abstract class.
@@ -96,7 +96,7 @@ You can have a more practical insight by reading the [support associated to the 
 
 ### Backend Support
 
-- Introduce the concept of backend labeling for `FileReader` and `FileWriter` implementations.
+- Introduce the concept of backend labeling for `Reader` and `Writer` implementations.
 - Enable multiple file readers/writers to share common backends. For instance, if an `ImageOpenCVReader` utilizes both numpy and OpenCV, the `VideoWriter` can leverage the same dependencies.
 - Allow users to specify preferred backend configurations, ensuring that conversion methods accommodate all selected backends seamlessly.
 

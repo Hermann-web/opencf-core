@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
-class FileReader(ABC):
+class Reader(ABC):
     """
     Abstract base class for file readers.
     """
@@ -48,7 +48,7 @@ class FileReader(ABC):
         pass
 
 
-class FileWriter(ABC):
+class Writer(ABC):
     """
     Abstract base class for file writers.
     """
@@ -80,9 +80,9 @@ class FileWriter(ABC):
         pass
 
 
-class SamePathReader(FileReader):
+class SamePathReader(Reader):
     """
-    A FileReader that returns the input path itself, useful for operations where the file path is the desired output.
+    A Reader that returns the input path itself, useful for operations where the file path is the desired output.
     """
 
     input_format = Path
@@ -94,7 +94,7 @@ class SamePathReader(FileReader):
         return input_path
 
 
-class TxtToStrReader(FileReader):
+class TxtToStrReader(Reader):
     """
     Reads content from a text file and returns it as a string.
     """
@@ -108,7 +108,7 @@ class TxtToStrReader(FileReader):
         return input_path.read_text()
 
 
-class StrToTxtWriter(FileWriter):
+class StrToTxtWriter(Writer):
     """
     Writes a string to a text file.
     """
@@ -122,7 +122,7 @@ class StrToTxtWriter(FileWriter):
         output_path.write_text(output_content)
 
 
-class CsvToListReader(FileReader):
+class CsvToListReader(Reader):
     """
     Reads content from a CSV file and returns it as a list of lists, where each sublist represents a row.
     """
@@ -140,7 +140,7 @@ class CsvToListReader(FileReader):
             return [row for row in reader]
 
 
-class ListToCsvWriter(FileWriter):
+class ListToCsvWriter(Writer):
     """
     Writes content as a list of lists to a CSV file, where each sublist represents a row.
     """
@@ -159,7 +159,7 @@ class ListToCsvWriter(FileWriter):
                 writer.writerow(row)
 
 
-class JsonToDictReader(FileReader):
+class JsonToDictReader(Reader):
     """
     Reads content from a JSON file and returns it as a dictionary.
     """
@@ -173,7 +173,7 @@ class JsonToDictReader(FileReader):
         return json.loads(input_path.read_text())
 
 
-class DictToJsonWriter(FileWriter):
+class DictToJsonWriter(Writer):
     """
     Writes content from a dictionary to a JSON file.
     """
@@ -187,7 +187,7 @@ class DictToJsonWriter(FileWriter):
         return output_path.write_text(json.dumps(output_content))
 
 
-class XmlToStrReader(FileReader):
+class XmlToStrReader(Reader):
     """
     Reads content from an XML file and returns it as a string.
     """
@@ -202,7 +202,7 @@ class XmlToStrReader(FileReader):
         return input_path.read_text()
 
 
-class StrToXmlWriter(FileWriter):
+class StrToXmlWriter(Writer):
     """
     Writes content as a string to an XML file.
     """

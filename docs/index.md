@@ -10,8 +10,8 @@
     * [get\_supported\_conversions](#opencf_core.converter_app.BaseConverterApp.get_supported_conversions)
     * [run](#opencf_core.converter_app.BaseConverterApp.run)
 * [opencf_core.io\_handler](#opencf_core.io_handler)
-  * [FileReader](#opencf_core.io_handler.FileReader)
-  * [FileWriter](#opencf_core.io_handler.FileWriter)
+  * [Reader](#opencf_core.io_handler.Reader)
+  * [Writer](#opencf_core.io_handler.Writer)
   * [SamePathReader](#opencf_core.io_handler.SamePathReader)
   * [TxtToStrReader](#opencf_core.io_handler.TxtToStrReader)
   * [StrToTxtWriter](#opencf_core.io_handler.StrToTxtWriter)
@@ -167,22 +167,22 @@ formats such as plain text, CSV, JSON, and potentially XML. It introduces a set 
 implementations for reading from and writing to files, ensuring type safety and format consistency through method
 signatures and runtime checks.
 
-<a id="opencf_core.io_handler.FileReader"></a>
+<a id="opencf_core.io_handler.Reader"></a>
 
-## FileReader Objects
+## Reader Objects
 
 ```python
-class FileReader(ABC)
+class Reader(ABC)
 ```
 
 Abstract base class for file readers.
 
-<a id="opencf_core.io_handler.FileWriter"></a>
+<a id="opencf_core.io_handler.Writer"></a>
 
-## FileWriter Objects
+## Writer Objects
 
 ```python
-class FileWriter(ABC)
+class Writer(ABC)
 ```
 
 Abstract base class for file writers.
@@ -192,17 +192,17 @@ Abstract base class for file writers.
 ## SamePathReader Objects
 
 ```python
-class SamePathReader(FileReader)
+class SamePathReader(Reader)
 ```
 
-A FileReader that returns the input path itself, useful for operations where the file path is the desired output.
+A Reader that returns the input path itself, useful for operations where the file path is the desired output.
 
 <a id="opencf_core.io_handler.TxtToStrReader"></a>
 
 ## TxtToStrReader Objects
 
 ```python
-class TxtToStrReader(FileReader)
+class TxtToStrReader(Reader)
 ```
 
 Reads content from a text file and returns it as a string.
@@ -212,7 +212,7 @@ Reads content from a text file and returns it as a string.
 ## StrToTxtWriter Objects
 
 ```python
-class StrToTxtWriter(FileWriter)
+class StrToTxtWriter(Writer)
 ```
 
 Writes a string to a text file.
@@ -222,7 +222,7 @@ Writes a string to a text file.
 ## CsvToListReader Objects
 
 ```python
-class CsvToListReader(FileReader)
+class CsvToListReader(Reader)
 ```
 
 Reads content from a CSV file and returns it as a list of lists, where each sublist represents a row.
@@ -232,7 +232,7 @@ Reads content from a CSV file and returns it as a list of lists, where each subl
 ## ListToCsvWriter Objects
 
 ```python
-class ListToCsvWriter(FileWriter)
+class ListToCsvWriter(Writer)
 ```
 
 Writes content as a list of lists to a CSV file, where each sublist represents a row.
@@ -242,7 +242,7 @@ Writes content as a list of lists to a CSV file, where each sublist represents a
 ## JsonToDictReader Objects
 
 ```python
-class JsonToDictReader(FileReader)
+class JsonToDictReader(Reader)
 ```
 
 Reads content from a JSON file and returns it as a dictionary.
@@ -252,7 +252,7 @@ Reads content from a JSON file and returns it as a dictionary.
 ## DictToJsonWriter Objects
 
 ```python
-class DictToJsonWriter(FileWriter)
+class DictToJsonWriter(Writer)
 ```
 
 Writes content from a dictionary to a JSON file.
@@ -262,7 +262,7 @@ Writes content from a dictionary to a JSON file.
 ## XmlToStrReader Objects
 
 ```python
-class XmlToStrReader(FileReader)
+class XmlToStrReader(Reader)
 ```
 
 Reads content from an XML file and returns it as a string.
@@ -272,7 +272,7 @@ Reads content from an XML file and returns it as a string.
 ## StrToXmlWriter Objects
 
 ```python
-class StrToXmlWriter(FileWriter)
+class StrToXmlWriter(Writer)
 ```
 
 Writes content as a string to an XML file.

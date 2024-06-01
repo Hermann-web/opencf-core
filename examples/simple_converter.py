@@ -1,16 +1,19 @@
-from pathlib import Path
 from typing import List
 
-from opencf_core.base_converter import BaseConverter
+from opencf_core.base_converter import (
+    FileConversionArgs,
+    FileOutputConverter,
+    WriterConverter,
+)
 from opencf_core.file_handler import ResolvedInputFile
 from opencf_core.filetypes import FileType
-from opencf_core.io_handler import FileWriter, StrToTxtWriter, TxtToStrReader
+from opencf_core.io_handler import StrToTxtWriter, TxtToStrReader
 from opencf_core.logging_config import logger_config
 
 logger_config.set_log_level_str(level="debug")
 
 
-class TXTToMDConverter(BaseConverter):
+class TXTToMDConverter(WriterConverter):
     file_reader = TxtToStrReader()
     file_writer = StrToTxtWriter()
 
@@ -22,12 +25,12 @@ class TXTToMDConverter(BaseConverter):
     def _get_supported_output_types(cls) -> FileType:
         return FileType.MD
 
-    def _convert(self, input_contents: List[str]):
+    def _convert(self, input_contents: List[str], _=None):
         md_content = "\n".join(input_contents)
         return md_content
 
 
-class TXTToTXTConverter(BaseConverter):
+class TXTToTXTConverter(FileOutputConverter):
     file_reader = TxtToStrReader()
     # no file writer means the converter will handle the saving
     folder_as_output = False
@@ -41,7 +44,8 @@ class TXTToTXTConverter(BaseConverter):
     def _get_supported_output_types(cls) -> FileType:
         return FileType.TEXT
 
-    def _convert(self, input_contents: List[str], output_file: Path):
+    def _convert(self, input_contents: List[str], args: FileConversionArgs):
+        output_file = args.output_file
         md_content = "\n".join(input_contents)
         output_file.write_text(md_content)
 

@@ -16,13 +16,16 @@ Exceptions:
 """
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, Generic, Iterable, List, Optional, Tuple, TypeVar, Union
 
 from .file_handler import ResolvedInputFile
 from .filetypes import FileType
-from .io_handler import FileReader, FileWriter, SamePathReader
+from .io_handler import Reader, SamePathReader, Writer
 from .logging_config import logger
+
+T = TypeVar("T")
 
 
 class InvalidOutputFormatError(Exception):
@@ -38,13 +41,13 @@ class InvalidOutputFormatError(Exception):
         return f"{super().__str__()}\n\n### Some solving tips\n{self.solving_tips}\n"
 
 
-class BaseConverter(ABC):
+class BaseConverter(ABC, Generic[T]):
     """
     Abstract base class for file conversion, defining the template for input to output file conversion.
     """
 
-    file_reader: Optional[FileReader] = None
-    file_writer: Optional[FileWriter] = None
+    file_reader: Optional[Reader] = None
+    file_writer: Optional[Writer] = None
     folder_as_output: Optional[bool] = None
 
     def __init__(
@@ -74,6 +77,8 @@ class BaseConverter(ABC):
         # self.input_format = self.file_reader.input_format
         # self.output_format = self.file_writer.output_format
         self.check_io_handlers()
+
+        self.output_content: Any
 
     def _check_file_types(self):
         """
@@ -108,7 +113,7 @@ class BaseConverter(ABC):
         if self.file_reader is None:
             self.file_reader = SamePathReader()
 
-        if not isinstance(self.file_reader, FileReader):
+        if not isinstance(self.file_reader, Reader):
             raise ValueError("Invalid file reader")
 
         if self.file_writer is None:
@@ -118,13 +123,17 @@ class BaseConverter(ABC):
                 )
             return
 
-        if not isinstance(self.file_writer, FileWriter):
+        if not isinstance(self.file_writer, Writer):
             raise ValueError("Invalid file writer")
 
         self.folder_as_output = False
 
+    @abstractmethod
     def custom_io_handlers_check(self):
-        pass
+        """
+        Custom IO handlers check method. Subclasses should implement this method to ensure proper IO handlers are set.
+        """
+        raise NotImplementedError
 
     @classmethod
     def get_input_types(cls):
@@ -229,7 +238,7 @@ class BaseConverter(ABC):
             ), f"Input content format check failed for {input_file.path.name}"
         logger.debug("Input content format check passed")
 
-        output_path = self.convert_files()
+        output_path = self.convert_files(output_path=self.output_file.path)
 
         assert (
             output_path.exists()
@@ -238,63 +247,19 @@ class BaseConverter(ABC):
         logger.info(f"Output file: {output_path.resolve()}")
         logger.info("Conversion process complete.")
 
-    def convert_files(self):
-        kwargs, output_path = self._get_convertion_kwargs(self.output_file.path)
-
-        # Convert input files to output content
-        logger.info("Converting files...")
-        if self.file_writer is None:
-            logger.info("Writing output directly")
-            self._convert(input_contents=self._input_contents, **kwargs)
-            logger.debug("Conversion complete")
-        else:
-            logger.info("Using output content")
-            self.output_content = self._convert(input_contents=self._input_contents)
-            # Check output content format
-            if not self._check_output_format(self.output_content):
-                solving_tips = self.__get_bad_output_content_solving_tips__()
-                raise InvalidOutputFormatError(solving_tips)
-            logger.debug("Output content format check passed")
-            # save file
-            logger.info("Writing output file...")
-            self._write_content(output_path, self.output_content)
-            logger.debug("Write complete")
-        return output_path
-
-    def _get_convertion_kwargs(self, output_path: Path):
-        kwargs = {}
-        if self.folder_as_output:
-            assert (
-                output_path.is_dir()
-            ), f"output_path {output_path} is not a dir while a folder is required for this conversion"
-            kwargs["output_folder"] = output_path
-        else:
-            assert (
-                not output_path.is_dir()
-            ), f"the provided or resolved output path ('{output_path}') already exist as a dir while a file is required for this conversion"
-            # if output_path.is_dir():
-            #     suffix = self.get_supported_output_types().get_one_suffix()
-            #     output_path = (output_path / "opencf-output").with_suffix(suffix)
-            kwargs["output_file"] = output_path
-        return kwargs, output_path
+    @abstractmethod
+    def convert_files(self, output_path: Path):
+        """
+        Abstract method to be implemented by subclasses to handle file conversion process.
+        """
+        pass
 
     @abstractmethod
-    def _convert(
-        self,
-        input_contents: List,
-        output_file: Optional[Path] = None,
-        output_folder: Optional[Path] = None,
-    ) -> Any:
+    def _convert(self, input_contents: List, args: T) -> Any:
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.
         """
-        logger.info("Conversion method not implemented")
-
-    def __get_bad_output_content_solving_tips__(self) -> str:
-        _solving_tips = (
-            f"If you convertion method (`{self.__class__.__name__}._convert(self, input_content:List[])`) uses only one input, make sure you select the first element of input_contents list before procedding",
-        )
-        return "\n".join(f"{i+1}. {elt}" for i, elt in enumerate(_solving_tips))
+        raise NotImplementedError
 
     def _read_content(self, input_path: Path):
         assert self.file_reader is not None
@@ -309,3 +274,158 @@ class BaseConverter(ABC):
     def _write_content(self, output_path: Path, output_content):
         assert self.file_writer is not None
         return self.file_writer._write_content(output_path, output_content)
+
+
+@dataclass
+class FileConversionArgs:
+    output_file: Path
+
+
+@dataclass
+class FolderConversionArgs:
+    output_folder: Path
+
+
+class WriterConverter(BaseConverter[None]):
+    def custom_io_handlers_check(self):
+        """
+        Check if the file writer is valid.
+        """
+        if not isinstance(self.file_writer, Writer):
+            raise ValueError("Invalid file writer")
+
+    def convert_files(self, output_path: Path):
+        """
+        Convert input files to output content and save the output to the specified path.
+
+        :param output_path: The path where the converted output file will be saved.
+        :return: The path where the output file was saved.
+        """
+        # Convert input files to output content
+        logger.info("Converting files...")
+        self.output_content = self._convert(
+            input_contents=self._input_contents, args=None
+        )
+
+        # Check output content format
+        if not self._check_output_format(self.output_content):
+            solving_tips = self.__get_bad_output_content_solving_tips__()
+            raise InvalidOutputFormatError(solving_tips)
+        logger.debug("Output content format check passed")
+
+        # Save file
+        logger.info("Writing output file...")
+        self._write_content(output_path, self.output_content)
+        logger.debug("Write complete")
+
+        return output_path
+
+    @abstractmethod
+    def _convert(self, input_contents: List, args: None) -> Any:
+        """
+        Abstract method to be implemented by subclasses to perform the actual file conversion process.
+
+        :param input_contents: List of input contents to be converted.
+        :param args: Arguments required for the conversion process, specific to the type of conversion.
+        :return: The converted content.
+        """
+        logger.info("Conversion method not implemented")
+
+    def __get_bad_output_content_solving_tips__(self) -> str:
+        """
+        Provide tips to solve issues with bad output content.
+
+        :return: Tips to solve issues with bad output content.
+        """
+        _solving_tips = (
+            f"If your conversion method (`{self.__class__.__name__}._convert(self, input_content: List)`) uses only one input, make sure you select the first element of the input_contents list before proceeding.",
+        )
+        return "\n".join(f"{i+1}. {elt}" for i, elt in enumerate(_solving_tips))
+
+
+class FileOutputConverter(BaseConverter[FileConversionArgs]):
+    def custom_io_handlers_check(self):
+        """
+        Check if the file writer and folder output settings are valid.
+        """
+        if self.file_writer is not None:
+            raise ValueError("Writer should not be set")
+
+        if self.folder_as_output is not None and self.folder_as_output is not False:
+            raise ValueError("folder_as_output, when set, should be set to False")
+
+    def convert_files(self, output_path: Path):
+        """
+        Convert input files to output content and save the output to the specified file path.
+
+        :param output_path: The path where the converted output file will be saved.
+        :return: The path where the output file was saved.
+        """
+        assert (
+            not output_path.is_dir()
+        ), f"The provided or resolved output path ('{output_path}') already exists as a dir while a file is required for this conversion"
+
+        # Convert input files to output content
+        logger.info("Converting files...")
+        self._convert(
+            input_contents=self._input_contents,
+            args=FileConversionArgs(output_file=output_path),
+        )
+        logger.debug("Conversion complete")
+
+        return output_path
+
+    @abstractmethod
+    def _convert(self, input_contents: List, args: FileConversionArgs) -> Any:
+        """
+        Abstract method to be implemented by subclasses to perform the actual file conversion process.
+
+        :param input_contents: List of input contents to be converted.
+        :param args: Arguments required for the file-based conversion process.
+        :return: The converted content.
+        """
+        logger.info("Conversion method not implemented")
+
+
+class FolderOutputConverter(BaseConverter[FolderConversionArgs]):
+    def custom_io_handlers_check(self):
+        """
+        Check if the file writer and folder output settings are valid.
+        """
+        if self.file_writer is not None:
+            raise ValueError("Writer should not be set")
+
+        if self.folder_as_output is not None and self.folder_as_output is not True:
+            raise ValueError("folder_as_output, when set, should be set to True")
+
+    def convert_files(self, output_path: Path):
+        """
+        Convert input files to output content and save the output to the specified folder path.
+
+        :param output_path: The path where the converted output folder will be saved.
+        :return: The path where the output folder was saved.
+        """
+        assert (
+            output_path.is_dir()
+        ), f"Output path {output_path} is not a dir while a folder is required for this conversion"
+
+        # Convert input files to output content
+        logger.info("Converting files...")
+        self._convert(
+            input_contents=self._input_contents,
+            args=FolderConversionArgs(output_folder=output_path),
+        )
+        logger.debug("Conversion complete")
+
+        return output_path
+
+    @abstractmethod
+    def _convert(self, input_contents: List, args: FolderConversionArgs) -> Any:
+        """
+        Abstract method to be implemented by subclasses to perform the actual file conversion process.
+
+        :param input_contents: List of input contents to be converted.
+        :param args: Arguments required for the folder-based conversion process.
+        :return: The converted content.
+        """
+        logger.info("Conversion method not implemented")

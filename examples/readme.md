@@ -129,9 +129,9 @@ from typing import List
 import pandas as pd
 from opencf_core.base_converter import BaseConverter, ResolvedInputFile
 from opencf_core.filetypes import FileType
-from opencf_core.io_handler import FileReader, ListToCsvWriter
+from opencf_core.io_handler import Reader, ListToCsvWriter
 
-class SpreadsheetToPandasReader(FileReader):
+class SpreadsheetToPandasReader(Reader):
     input_format = pd.DataFrame
 
     def _check_input_format(self, content: pd.DataFrame):

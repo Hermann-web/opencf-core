@@ -11,8 +11,8 @@ poetry run isort $MODULE $TEST_MODULE $EXAMPLES_MODULE/*.py
 echo "-> running black ..."
 poetry run black $MODULE $TEST_MODULE $EXAMPLES_MODULE/*.py
 
-# echo "-> running pylint ..."
-# pylint $MODULE
+echo "-> running pylint ..."
+pylint $MODULE $TEST_MODULE $EXAMPLES_MODULE/*.py
 
 echo "-> running mypy..."
 poetry run mypy $MODULE $TEST_MODULE $EXAMPLES_MODULE/*.py

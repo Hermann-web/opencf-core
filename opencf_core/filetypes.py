@@ -257,7 +257,7 @@ class FileType(Enum):
         file = Path(file_path)
 
         if not file.exists():
-            raise FileNotFoundError(file_path)
+            raise FileNotFoundError(f"File '{file_path}' does not exist.")
 
         file_mimetype = guess_mime_type_from_file(str(file))
 
