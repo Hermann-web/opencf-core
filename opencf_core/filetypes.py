@@ -50,7 +50,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Tuple, Type, Union
+from typing import Dict, Iterable, Set, Tuple, Type, Union
 
 from .enum import Enum, extend_enum_with_methods
 from .exceptions import EmptySuffixError, MismatchedException, UnsupportedFileTypeError
@@ -70,6 +70,7 @@ class MimeType:
     extensions: Tuple[str, ...] = ()
     mime_types: Tuple[str, ...] = ()
     upper_mime_types: Tuple[str, ...] = ()
+    children_mime_types: Tuple[MimeType, ...] = ()
 
 
 def merge_mimetype(*mimetypes: MimeType) -> MimeType:
@@ -77,7 +78,8 @@ def merge_mimetype(*mimetypes: MimeType) -> MimeType:
     extensions = sum((m.extensions for m in mimetypes), ())
     mime_types = sum((m.mime_types for m in mimetypes), ())
     upper_mime_types = sum((m.upper_mime_types for m in mimetypes), ())
-    return MimeType(extensions, mime_types, upper_mime_types)
+    children_mime_types = tuple(mimetypes)
+    return MimeType(extensions, mime_types, upper_mime_types, children_mime_types)
 
 
 class FileType(Enum):
@@ -551,3 +553,109 @@ class FileTypeExamples(Enum):
 
 
 extend_filetype_enum(FileTypeExamples)
+
+
+def get_mime_type_children(
+    mime_type: MimeType, include_head: bool = False
+) -> Set[MimeType]:
+    """Recursively get all children MIME types in the subtree of the given MIME type.
+
+    Args:
+        mime_type (MimeType): The MIME type to get the subtree for.
+        include_head (bool, optional): Controls whether to include the head node in the result. Defaults to False.
+
+    Returns:
+        Set[MimeType]: A set of all MIME types in the subtree.
+
+    Example:
+        >>> all_image_children = get_mime_type_children(MimeType(extensions=('png',), mime_types=('image/png',), upper_mime_types=(), children_mime_types=()))
+        >>> print(all_image_children)
+        {MimeType(extensions=('png',), mime_types=('image/png',), upper_mime_types=(), children_mime_types=()),
+         MimeType(extensions=('jpeg', 'jpg'), mime_types=('image/jpeg',), upper_mime_types=(), children_mime_types=()),
+         MimeType(extensions=('tiff',), mime_types=('image/tiff',), upper_mime_types=(), children_mime_types=())}
+    """
+    subtree = set()
+
+    def collect_children(mime_type: MimeType):
+        if include_head or mime_type != mime_type:
+            subtree.add(mime_type)
+        for child in mime_type.children_mime_types:
+            if child not in subtree:
+                subtree.add(child)
+                collect_children(child)
+
+    collect_children(mime_type)
+    return subtree
+
+
+def get_equivalent_file_types(
+    mime_types: Set[MimeType], raise_error: bool = True
+) -> Set[FileType]:
+    """Get the equivalent FileTypes for a given list of MimeTypes.
+
+    Args:
+        mime_types (Set[MimeType]): The list of MIME types to find the equivalent FileTypes for.
+        raise_error (bool, optional): Controls whether to raise an error if no equivalent FileType is found. Defaults to True.
+
+    Returns:
+        List[FileType]: A list of equivalent FileTypes if found, otherwise None.
+    """
+    mime_types = set(mime_types)
+    equivalents = set()
+    for file_type in FileType:
+        if file_type.value in mime_types:
+            equivalents.add(file_type)
+    if raise_error and len(equivalents) != len(mime_types):
+        missing_mimetypes = mime_types - set([mt.value for mt in equivalents])
+        raise ValueError(
+            f"No equivalent FileType found the {len(mime_types) - len(equivalents)} following MIME types: {missing_mimetypes}"
+        )
+    return equivalents
+
+
+def get_file_type_children(
+    file_type: FileType, include_head: bool = False
+) -> Set[FileType]:
+    """Recursively get all children FileTypes as equivalent FileTypes of the MIME types in the subtree of the given FileType.
+
+    Args:
+        file_type (FileType): The FileType to get the subtree for.
+        include_head (bool, optional): Controls whether to include the head node in the result. Defaults to False.
+
+    Returns:
+        Set[FileType]: A set of all equivalent FileTypes in the subtree.
+
+    Example:
+        >>> all_image_children = get_file_type_children(FileType.IMG_RASTER)
+        >>> print(all_image_children)
+        {FileType.PNG, FileType.JPEG, FileType.TIFF}
+    """
+    mime_type_children: Set[MimeType] = get_mime_type_children(
+        file_type.value, include_head
+    )
+    file_type_equivalents: Set[FileType] = get_equivalent_file_types(mime_type_children)
+    return file_type_equivalents
+
+
+def get_file_types_clidren(
+    file_types: Iterable[FileType], include_head: bool = False
+) -> Set[FileType]:
+    """Recursively get all children FileTypes as equivalent FileTypes of the MIME types
+    in the subtree of the given list of FileType instances.
+
+    Args:
+        file_types (List[FileType]): The list of FileType instances to get the subtree for.
+        include_head (bool, optional): Controls whether to include the head node in the result. Defaults to False.
+
+    Returns:
+        Set[FileType]: A set of all equivalent FileTypes in the subtree.
+
+    Example:
+        >>> all_image_children = get_file_types_from_list([FileType.IMG_RASTER])
+        >>> print(all_image_children)
+        {FileType.PNG, FileType.JPEG, FileType.TIFF}
+    """
+    children = set()
+    for file_type in file_types:
+        children |= get_file_type_children(file_type, include_head)
+    return children

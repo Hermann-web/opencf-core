@@ -48,6 +48,11 @@ class ResolvedInputFile:
         # Convert path to Path object
         self.path = Path(path)
 
+        # Parse boolean args
+        add_suffix = bool(add_suffix)
+        read_content = bool(read_content)
+        should_exist = bool(should_exist)
+
         if filetype_class is None:
             filetype_class = FileType
         assert issubclass(filetype_class, Enum)
@@ -56,7 +61,7 @@ class ResolvedInputFile:
         self._check_existence(should_exist)
 
         # Infer if the path is a directory
-        if is_dir is None:
+        if is_dir is None and add_suffix is False:
             is_dir = self._resolve_path_type(file_type=file_type)
 
         # Resolve the file type
@@ -87,7 +92,7 @@ class ResolvedInputFile:
         if self.path.exists():
             # Check if the existing path is a directory
             is_dir = self.path.is_dir()
-            logger.debug(f"Path exists. Setting is_dir to {is_dir}.")
+            logger.debug(f"Path {self.path} exists. Setting is_dir to {is_dir}.")
         elif is_filesuffix_set:
             # If a suffix is present, assume it's a file
             is_dir = False

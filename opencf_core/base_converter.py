@@ -18,10 +18,10 @@ Exceptions:
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generic, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Generic, Iterable, List, Optional, Set, Tuple, TypeVar, Union
 
 from .file_handler import ResolvedInputFile
-from .filetypes import FileType
+from .filetypes import FileType, get_file_types_clidren
 from .io_handler import Reader, SamePathReader, Writer
 from .logging_config import logger
 
@@ -89,7 +89,7 @@ class BaseConverter(ABC, Generic[T]):
                 raise ValueError(
                     f"Invalid input file. Expected: {ResolvedInputFile}. Actual: {type(input_file)}"
                 )
-            if input_file.file_type not in self.get_supported_input_types():
+            if input_file.file_type not in self.get_input_types(extend=True):
                 raise ValueError(
                     f"Unsupported input file type. Expected one of the followings: {self.get_supported_input_types()}, Actual: {input_file.file_type}"
                 )
@@ -98,7 +98,7 @@ class BaseConverter(ABC, Generic[T]):
             raise ValueError(
                 f"Invalid output file. Expected: {ResolvedInputFile}. Actual: {type(self.output_file)}"
             )
-        if self.output_file.file_type not in self.get_supported_output_types():
+        if self.output_file.file_type not in self.get_output_types(extend=True):
             raise ValueError(
                 f"Unsupported output file type. Expected one of the followings: {self.get_supported_output_types()}, Actual: {self.output_file.file_type}"
             )
@@ -136,12 +136,29 @@ class BaseConverter(ABC, Generic[T]):
         raise NotImplementedError
 
     @classmethod
-    def get_input_types(cls):
-        return cls.get_supported_input_types()
+    def get_input_types(cls, extend=False) -> Tuple[FileType, ...]:
+        file_types: Tuple[FileType, ...] = cls.get_supported_input_types()
+        extend = bool(extend)
+        if extend is False:
+            return file_types
+
+        extended_types: Set[FileType] = get_file_types_clidren(
+            file_types=file_types, include_head=True
+        )
+        return tuple(extended_types)
 
     @classmethod
-    def get_output_types(cls):
-        return cls.get_supported_output_types()
+    def get_output_types(cls, extend=False) -> Tuple[FileType, ...]:
+        file_types: Tuple[FileType, ...] = cls.get_supported_output_types()
+
+        extend = bool(extend)
+        if extend is False:
+            return file_types
+
+        extended_types: Set[FileType] = get_file_types_clidren(
+            file_types=file_types, include_head=True
+        )
+        return tuple(extended_types)
 
     @classmethod
     def get_supported_input_types(cls) -> Tuple[FileType, ...]:
@@ -277,16 +294,16 @@ class BaseConverter(ABC, Generic[T]):
 
 
 @dataclass
-class FileConversionArgs:
+class FileAsOutputConversionArgs:
     output_file: Path
 
 
 @dataclass
-class FolderConversionArgs:
+class FolderAsOutputConversionArgs:
     output_folder: Path
 
 
-class WriterConverter(BaseConverter[None]):
+class WriterBasedConverter(BaseConverter[None]):
     def custom_io_handlers_check(self):
         """
         Check if the file writer is valid.
@@ -343,7 +360,7 @@ class WriterConverter(BaseConverter[None]):
         return "\n".join(f"{i+1}. {elt}" for i, elt in enumerate(_solving_tips))
 
 
-class FileOutputConverter(BaseConverter[FileConversionArgs]):
+class FileAsOutputConverter(BaseConverter[FileAsOutputConversionArgs]):
     def custom_io_handlers_check(self):
         """
         Check if the file writer and folder output settings are valid.
@@ -369,14 +386,14 @@ class FileOutputConverter(BaseConverter[FileConversionArgs]):
         logger.info("Converting files...")
         self._convert(
             input_contents=self._input_contents,
-            args=FileConversionArgs(output_file=output_path),
+            args=FileAsOutputConversionArgs(output_file=output_path),
         )
         logger.debug("Conversion complete")
 
         return output_path
 
     @abstractmethod
-    def _convert(self, input_contents: List, args: FileConversionArgs) -> Any:
+    def _convert(self, input_contents: List, args: FileAsOutputConversionArgs) -> Any:
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.
 
@@ -387,7 +404,7 @@ class FileOutputConverter(BaseConverter[FileConversionArgs]):
         logger.info("Conversion method not implemented")
 
 
-class FolderOutputConverter(BaseConverter[FolderConversionArgs]):
+class FolderAsOutputConverter(BaseConverter[FolderAsOutputConversionArgs]):
     def custom_io_handlers_check(self):
         """
         Check if the file writer and folder output settings are valid.
@@ -413,14 +430,14 @@ class FolderOutputConverter(BaseConverter[FolderConversionArgs]):
         logger.info("Converting files...")
         self._convert(
             input_contents=self._input_contents,
-            args=FolderConversionArgs(output_folder=output_path),
+            args=FolderAsOutputConversionArgs(output_folder=output_path),
         )
         logger.debug("Conversion complete")
 
         return output_path
 
     @abstractmethod
-    def _convert(self, input_contents: List, args: FolderConversionArgs) -> Any:
+    def _convert(self, input_contents: List, args: FolderAsOutputConversionArgs) -> Any:
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.
 

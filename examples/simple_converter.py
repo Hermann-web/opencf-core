@@ -1,9 +1,9 @@
 from typing import List
 
 from opencf_core.base_converter import (
-    FileConversionArgs,
-    FileOutputConverter,
-    WriterConverter,
+    FileAsOutputConversionArgs,
+    FileAsOutputConverter,
+    WriterBasedConverter,
 )
 from opencf_core.file_handler import ResolvedInputFile
 from opencf_core.filetypes import FileType
@@ -13,7 +13,7 @@ from opencf_core.logging_config import logger_config
 logger_config.set_log_level_str(level="debug")
 
 
-class TXTToMDConverter(WriterConverter):
+class TXTToMDConverter(WriterBasedConverter):
     file_reader = TxtToStrReader()
     file_writer = StrToTxtWriter()
 
@@ -30,7 +30,7 @@ class TXTToMDConverter(WriterConverter):
         return md_content
 
 
-class TXTToTXTConverter(FileOutputConverter):
+class TXTToTXTConverter(FileAsOutputConverter):
     file_reader = TxtToStrReader()
     # no file writer means the converter will handle the saving
     folder_as_output = False
@@ -44,7 +44,7 @@ class TXTToTXTConverter(FileOutputConverter):
     def _get_supported_output_types(cls) -> FileType:
         return FileType.TEXT
 
-    def _convert(self, input_contents: List[str], args: FileConversionArgs):
+    def _convert(self, input_contents: List[str], args: FileAsOutputConversionArgs):
         output_file = args.output_file
         md_content = "\n".join(input_contents)
         output_file.write_text(md_content)

@@ -50,9 +50,9 @@ class BaseConverterApp:
         if len(input_paths) == 0:
             raise ValueError("input_paths should not be a empty list")
 
-        input_file_paths = get_filepaths_from_inputs(input_paths)
+        input_file_paths: List[str] = get_filepaths_from_inputs(input_paths)
         logger.debug("input_file_paths = %s", input_file_paths)
-        self.input_files = [
+        self.input_files: List[ResolvedInputFile] = [
             ResolvedInputFile(
                 input_file_path,
                 is_dir=False,
@@ -65,7 +65,7 @@ class BaseConverterApp:
             for input_file_path in input_file_paths
         ]
 
-        self.input_file_type = self.input_files[0].file_type
+        self.input_file_type: FileType = self.input_files[0].file_type
         assert self.input_file_type.is_true_filetype()
 
         if not output_file_path:
@@ -77,7 +77,7 @@ class BaseConverterApp:
         else:
             add_suffix_to_output_path = False
 
-        self.output_file = ResolvedInputFile(
+        self.output_file: ResolvedInputFile = ResolvedInputFile(
             output_file_path,
             is_dir=None,
             should_exist=False,
@@ -86,12 +86,12 @@ class BaseConverterApp:
             read_content=False,
             filetype_class=self.filetype_class,
         )
-        self.output_file_type = self.output_file.file_type
+        self.output_file_type: FileType = self.output_file.file_type
 
         for _conv_class in self.converters:
             self.add_converter_pair(_conv_class)
 
-    def add_converter_pair(self, converter_class):
+    def add_converter_pair(self, converter_class) -> None:
         """
         Adds a converter pair to the application.
 
@@ -108,8 +108,10 @@ class BaseConverterApp:
             )
 
         # Extract supported input and output types from the converter class
-        input_types = converter_class.get_input_types()
-        output_types = converter_class.get_output_types()
+        input_types: Tuple[FileType, ...] = converter_class.get_input_types(extend=True)
+        output_types: Tuple[FileType, ...] = converter_class.get_output_types(
+            extend=True
+        )
 
         # Add the converter pair to the converter map
         for input_type, output_type in product(input_types, output_types):
@@ -141,12 +143,14 @@ class BaseConverterApp:
         """
         return tuple(self._converter_map.keys())
 
-    def run(self):
+    def run(self) -> None:
         """
         Runs the conversion process.
         """
         # get converter class
-        converter_classes = self.get_converters_for_conversion(
+        converter_classes: List[
+            type[BaseConverter]
+        ] = self.get_converters_for_conversion(
             self.input_file_type, self.output_file_type
         )
 
