@@ -9,6 +9,7 @@ signatures and runtime checks.
 
 import csv
 import json
+import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List
@@ -122,41 +123,146 @@ class StrToTxtWriter(Writer):
         output_path.write_text(output_content)
 
 
-class CsvToListReader(Reader):
+class XmlToTreeReader(Reader):
     """
-    Reads content from a CSV file and returns it as a list of lists, where each sublist represents a row.
+    Reads content from an XML file and returns it as an ElementTree element.
     """
 
-    input_format = List[List[str]]
+    input_format = ET.Element
 
-    def _check_input_format(self, content: List[List[str]]):
+    def _check_input_format(self, content: ET.Element) -> bool:
+        """
+        Validates the input content to ensure it is an ElementTree element.
+
+        Args:
+            content (ET.Element): The content to validate.
+
+        Returns:
+            bool: True if the content is a valid ElementTree element, False otherwise.
+        """
+        return isinstance(content, ET.Element)
+
+    def _read_content(self, input_path: Path) -> ET.Element:
+        """
+        Reads and parses the content from the XML file at the given path.
+
+        Args:
+            input_path (Path): The path to the XML file.
+
+        Returns:
+            ET.Element: The root element of the parsed XML tree.
+        """
+        text_content = input_path.read_text()
+        return ET.fromstring(text_content)
+
+
+class TreeToXmlWriter(Writer):
+    """
+    Writes content from a dictionary to an XML file.
+    """
+
+    output_format = ET.Element
+
+    def _check_output_format(self, content: ET.Element) -> bool:
+        """
+        Validates the output content to ensure it is an ElementTree element.
+
+        Args:
+            content (ET.Element): The content to validate.
+
+        Returns:
+            bool: True if the content is a valid ElementTree element, False otherwise.
+        """
+        return isinstance(content, ET.Element)
+
+    def _write_content(self, output_path: Path, content: ET.Element) -> None:
+        """
+        Writes the ElementTree element content to an XML file at the given path.
+
+        Args:
+            output_path (Path): The path to the XML file.
+            content (ET.Element): The ElementTree element content to write.
+        """
+        tree = ET.ElementTree(content)
+        tree.write(output_path, encoding="utf-8", xml_declaration=True)
+
+
+class CsvToDictReader(Reader):
+    """
+    Reads content from a CSV file and returns it as a list of dictionaries.
+
+    Example:
+        >>> reader = CsvToDictReader()
+        >>> content = reader.read(Path('input.csv'))
+        >>> print(content)
+        [{'name': 'John', 'age': '30'}, {'name': 'Jane', 'age': '25'}]
+    """
+
+    input_format = List[Dict[str, Any]]
+
+    def _check_input_format(self, content: List[Dict[str, Any]]) -> bool:
+        """
+        Validates the input content to ensure it is a list of dictionaries.
+
+        Args:
+            content (List[Dict[str, Any]]): The content to validate.
+
+        Returns:
+            bool: True if the content is a list of dictionaries, False otherwise.
+        """
         return isinstance(content, list) and all(
-            isinstance(row, list) for row in content
+            isinstance(row, dict) for row in content
         )
 
-    def _read_content(self, input_path: Path) -> List[List[str]]:
-        with open(input_path, "r", newline="") as csvfile:
-            reader = csv.reader(csvfile)
+    def _read_content(self, input_path: Path) -> List[Dict[str, Any]]:
+        """
+        Reads and parses the content from the CSV file at the given path.
+
+        Args:
+            input_path (Path): The path to the CSV file.
+
+        Returns:
+            List[Dict[str, Any]]: The parsed content as a list of dictionaries.
+        """
+        with input_path.open(mode="r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file)
             return [row for row in reader]
 
 
-class ListToCsvWriter(Writer):
+class DictToCsvWriter(Writer):
     """
-    Writes content as a list of lists to a CSV file, where each sublist represents a row.
+    Writes content from a dictionary to a CSV file.
     """
 
-    output_format = List[List[str]]
+    output_format = List[Dict[str, Any]]
 
-    def _check_output_format(self, content: List[List[str]]):
+    def _check_output_format(self, content: List[Dict[str, Any]]) -> bool:
+        """
+        Validates the output content to ensure it is a list of dictionaries.
+
+        Args:
+            content (List[Dict[str, Any]]): The content to validate.
+
+        Returns:
+            bool: True if the content is a list of dictionaries, False otherwise.
+        """
         return isinstance(content, list) and all(
-            isinstance(row, list) for row in content
+            isinstance(row, dict) for row in content
         )
 
-    def _write_content(self, output_path: Path, output_content: List[List[str]]):
-        with open(output_path, "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            for row in output_content:
-                writer.writerow(row)
+    def _write_content(self, output_path: Path, content: List[Dict[str, Any]]) -> None:
+        """
+        Writes the list of dictionaries content to a CSV file at the given path.
+
+        Args:
+            output_path (Path): The path to the CSV file.
+            content (List[Dict[str, Any]]): The list of dictionaries content to write.
+        """
+        with output_path.open(mode="w", encoding="utf-8", newline="") as csv_file:
+            if content:
+                writer = csv.DictWriter(csv_file, fieldnames=content[0].keys())
+                writer.writeheader()
+                writer.writerows(content)
 
 
 class JsonToDictReader(Reader):
@@ -184,7 +290,7 @@ class DictToJsonWriter(Writer):
         return isinstance(content, dict)
 
     def _write_content(self, output_path: Path, output_content: Dict[str, Any]):
-        return output_path.write_text(json.dumps(output_content))
+        return output_path.write_text(json.dumps(output_content, indent=4))
 
 
 class XmlToStrReader(Reader):

@@ -4,6 +4,7 @@ Main Module
 This module contains the main application logic.
 """
 
+import traceback
 from collections import defaultdict
 from itertools import product
 from pathlib import Path
@@ -185,7 +186,8 @@ class BaseConverterApp:
                 break
             except Exception as e:
                 logger.error(f"Conversion with {converter_class.__name__} failed: {e}")
+                logger.error("".join(traceback.format_stack()))
 
         # If none of the converter classes succeeded, log an error
         if not conversion_successful:
-            logger.error(f"All {len(converter_classes)} conversion attempts failed.")
+            logger.error(f"{len(converter_classes)} conversion attempts failed.")
