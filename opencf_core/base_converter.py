@@ -124,7 +124,9 @@ class BaseConverter(ABC, Generic[T]):
             return
 
         if not isinstance(self.file_writer, Writer):
-            raise ValueError("Invalid file writer")
+            raise ValueError(
+                f"Invalid file writer. found {type(self.file_writer)} object instance of {Writer} instance"
+            )
 
         self.folder_as_output = False
 
@@ -309,7 +311,9 @@ class WriterBasedConverter(BaseConverter[None]):
         Check if the file writer is valid.
         """
         if not isinstance(self.file_writer, Writer):
-            raise ValueError("Invalid file writer")
+            raise ValueError(
+                f"Invalid file writer. found {type(self.file_writer)} object instance of {Writer} instance"
+            )
 
     def convert_files(self, output_path: Path):
         """

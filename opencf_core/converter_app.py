@@ -186,7 +186,7 @@ class BaseConverterApp:
                 break
             except Exception as e:
                 logger.error(f"Conversion with {converter_class.__name__} failed: {e}")
-                logger.error("".join(traceback.format_stack()))
+                logger.error(traceback.format_exc())
 
         # If none of the converter classes succeeded, log an error
         if not conversion_successful:
