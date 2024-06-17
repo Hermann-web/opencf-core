@@ -6,7 +6,7 @@ Dependencies:
 
 from typing import TYPE_CHECKING, Callable, Type
 
-from aenum import extend_enum  # type: ignore
+from aenum import extend_enum  # type: ignore # pylint: disable=import-error
 
 from .logging_config import logger
 
@@ -45,7 +45,9 @@ def extend_enum_with_methods(
             extend_enum(inherited_enum, name, member.value)
         else:
             logger.warning(
-                f"Member '{name}' from {added_enum.__name__} did not pass the filter function."
+                "Member '%s' from %s did not pass the filter function.",
+                name,
+                added_enum.__name__,
             )
 
     # Copy methods from inherited_enum and added_enum to the new class

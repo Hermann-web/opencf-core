@@ -78,6 +78,7 @@ class BaseConverter(ABC, Generic[T]):
         # self.output_format = self.file_writer.output_format
         self.check_io_handlers()
 
+        self._input_contents: List[Any]
         self.output_content: Any
 
     def _check_file_types(self):
@@ -238,9 +239,14 @@ class BaseConverter(ABC, Generic[T]):
 
         # log
         logger.debug(
-            f"Converting {self.input_files[0].path.name} and {len(self.input_files)-1} more ({self.get_supported_input_types()}) to {self.output_file.path.name} ({self.get_supported_output_types()})..."
+            "Converting %s and %s more (%s) to %s (%s)...",
+            self.input_files[0].path.name,
+            len(self.input_files) - 1,
+            self.get_supported_input_types(),
+            self.output_file.path.name,
+            self.get_supported_output_types(),
         )
-        logger.debug(f"Input files ({len(self.input_files)}): {self.input_files}")
+        logger.debug("Input files (%s): %s", len(self.input_files), self.input_files)
 
         # Read all input files
         logger.info("Reading input file...")
@@ -251,7 +257,7 @@ class BaseConverter(ABC, Generic[T]):
         # Check input content format for all files
         logger.info("Checking input content format...")
         for input_content, input_file in zip(self._input_contents, self.input_files):
-            logger.debug(f"Checking input content format for {input_file.path.name}...")
+            logger.debug("Checking input content format for {input_file.path.name}...")
             assert self._check_input_format(
                 input_content
             ), f"Input content format check failed for {input_file.path.name}"
@@ -263,7 +269,7 @@ class BaseConverter(ABC, Generic[T]):
             output_path.exists()
         ), f"Output file {output_path.name} not found after conversion"
 
-        logger.info(f"Output file: {output_path.resolve()}")
+        logger.info("Output file: %s", output_path.resolve())
         logger.info("Conversion process complete.")
 
     @abstractmethod
@@ -271,7 +277,7 @@ class BaseConverter(ABC, Generic[T]):
         """
         Abstract method to be implemented by subclasses to handle file conversion process.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _convert(self, input_contents: List, args: T) -> Any:
@@ -282,17 +288,17 @@ class BaseConverter(ABC, Generic[T]):
 
     def _read_content(self, input_path: Path):
         assert self.file_reader is not None
-        return self.file_reader._read_content(input_path)
+        return self.file_reader.read_content(input_path)
 
     def _check_input_format(self, input_content):
-        return self.file_reader._check_input_format(input_content)
+        return self.file_reader.check_input_format(input_content)
 
     def _check_output_format(self, output_content):
-        return self.file_writer._check_output_format(output_content)
+        return self.file_writer.check_output_format(output_content)
 
     def _write_content(self, output_path: Path, output_content):
         assert self.file_writer is not None
-        return self.file_writer._write_content(output_path, output_content)
+        return self.file_writer.write_content(output_path, output_content)
 
 
 @dataclass

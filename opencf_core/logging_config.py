@@ -3,6 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+logging_nameToLevel = logging._nameToLevel  # pylint: disable=protected-access
+
 
 class ColoredFormatter(logging.Formatter):
     """
@@ -106,7 +108,7 @@ class LoggerConfig:
         Args:
             level (str): Logging level.
         """
-        parsed_level: int = logging._nameToLevel[level.upper()]
+        parsed_level: int = logging_nameToLevel[level.upper()]
         self.set_log_level(parsed_level)
 
 

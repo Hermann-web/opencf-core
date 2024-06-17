@@ -3,7 +3,7 @@ TEST_MODULE=./tests
 EXAMPLES_MODULE=./examples
 
 echo "-> running prettier on both readme ..."
-prettier README.md examples/readme.md -w
+prettier README.md examples/readme.md docs/index.md -w
 
 echo "-> running isort ..."
 poetry run isort $MODULE $TEST_MODULE $EXAMPLES_MODULE/*.py

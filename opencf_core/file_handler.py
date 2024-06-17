@@ -92,7 +92,7 @@ class ResolvedInputFile:
         if self.path.exists():
             # Check if the existing path is a directory
             is_dir = self.path.is_dir()
-            logger.debug(f"Path {self.path} exists. Setting is_dir to {is_dir}.")
+            logger.debug("Path %s exists. Setting is_dir to %s.", self.path, is_dir)
         elif is_filesuffix_set:
             # If a suffix is present, assume it's a file
             is_dir = False
@@ -118,9 +118,10 @@ class ResolvedInputFile:
                 f"The specified file or folder '{self.path}' does not exist, but existence is required."
             )
 
-        elif not should_exist and self.path.exists():
+        if not should_exist and self.path.exists():
             logger.warning(
-                f"The specified file or folder '{self.path}' already exist, but existence is not required."
+                "The specified file or folder '%s' already exist, but existence is not required.",
+                self.path,
             )
 
     def _resolve_directory_type(self, file_type: str):
@@ -187,8 +188,10 @@ class ResolvedInputFile:
                 return self.filetype_class.from_path(
                     file_path, read_content=read_content, raise_err=True
                 )[0]
-            except EmptySuffixError:
-                raise ValueError("filepath suffix is emtpy but file_type not set")
+            except EmptySuffixError as exc:
+                raise ValueError(
+                    "filepath suffix is emtpy but file_type not set"
+                ) from exc
 
         resolved_file_type, _ = self.filetype_class.from_suffix(
             file_type, raise_err=True

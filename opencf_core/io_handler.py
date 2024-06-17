@@ -22,6 +22,9 @@ class Reader(ABC):
 
     # input_format: type = None
 
+    def check_input_format(self, content: Any) -> bool:
+        return self._check_input_format(content=content)
+
     @abstractmethod
     def _check_input_format(self, content: Any) -> bool:
         """
@@ -33,7 +36,10 @@ class Reader(ABC):
         Returns:
             bool: True if the content matches the expected input format, False otherwise.
         """
-        pass
+        raise NotImplementedError
+
+    def read_content(self, input_path: Path) -> Any:
+        return self._read_content(input_path=input_path)
 
     @abstractmethod
     def _read_content(self, input_path: Path) -> Any:
@@ -46,7 +52,7 @@ class Reader(ABC):
         Returns:
             Any: The content read from the input file.
         """
-        pass
+        raise NotImplementedError
 
 
 class Writer(ABC):
@@ -55,6 +61,9 @@ class Writer(ABC):
     """
 
     # output_format = None
+
+    def check_output_format(self, content: Any) -> bool:
+        return self._check_output_format(content=content)
 
     @abstractmethod
     def _check_output_format(self, content: Any) -> bool:
@@ -67,7 +76,12 @@ class Writer(ABC):
         Returns:
             bool: True if the content matches the expected output format, False otherwise.
         """
-        pass
+        raise NotImplementedError
+
+    def write_content(self, output_path: Path, output_content: Any):
+        return self._write_content(
+            output_path=output_path, output_content=output_content
+        )
 
     @abstractmethod
     def _write_content(self, output_path: Path, output_content: Any):
@@ -78,7 +92,7 @@ class Writer(ABC):
             output_path (Path): The path to the output file.
             output_content (Any): The content to be written to the output file.
         """
-        pass
+        raise NotImplementedError
 
 
 class SamePathReader(Reader):
@@ -175,7 +189,7 @@ class TreeToXmlWriter(Writer):
         """
         return isinstance(content, ET.Element)
 
-    def _write_content(self, output_path: Path, content: ET.Element) -> None:
+    def _write_content(self, output_path: Path, output_content: ET.Element) -> None:
         """
         Writes the ElementTree element content to an XML file at the given path.
 
@@ -183,7 +197,7 @@ class TreeToXmlWriter(Writer):
             output_path (Path): The path to the XML file.
             content (ET.Element): The ElementTree element content to write.
         """
-        tree = ET.ElementTree(content)
+        tree = ET.ElementTree(output_content)
         tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
 
@@ -226,7 +240,8 @@ class CsvToDictReader(Reader):
         """
         with input_path.open(mode="r", encoding="utf-8") as csv_file:
             reader = csv.DictReader(csv_file)
-            return [row for row in reader]
+            rows = list(reader)
+            return rows
 
 
 class DictToCsvWriter(Writer):
@@ -250,7 +265,9 @@ class DictToCsvWriter(Writer):
             isinstance(row, dict) for row in content
         )
 
-    def _write_content(self, output_path: Path, content: List[Dict[str, Any]]) -> None:
+    def _write_content(
+        self, output_path: Path, output_content: List[Dict[str, Any]]
+    ) -> None:
         """
         Writes the list of dictionaries content to a CSV file at the given path.
 
@@ -259,10 +276,10 @@ class DictToCsvWriter(Writer):
             content (List[Dict[str, Any]]): The list of dictionaries content to write.
         """
         with output_path.open(mode="w", encoding="utf-8", newline="") as csv_file:
-            if content:
-                writer = csv.DictWriter(csv_file, fieldnames=content[0].keys())
+            if output_content:
+                writer = csv.DictWriter(csv_file, fieldnames=output_content[0].keys())
                 writer.writeheader()
-                writer.writerows(content)
+                writer.writerows(output_content)
 
 
 class JsonToDictReader(Reader):

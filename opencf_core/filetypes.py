@@ -574,17 +574,15 @@ def get_mime_type_children(
          MimeType(extensions=('jpeg', 'jpg'), mime_types=('image/jpeg',), upper_mime_types=(), children_mime_types=()),
          MimeType(extensions=('tiff',), mime_types=('image/tiff',), upper_mime_types=(), children_mime_types=())}
     """
-    subtree = set()
+    subtree = {mime_type} if include_head else set()
 
-    def collect_children(mime_type: MimeType):
-        if include_head or mime_type != mime_type:
-            subtree.add(mime_type)
-        for child in mime_type.children_mime_types:
+    def collect_children(node: MimeType):
+        for child in node.children_mime_types:
             if child not in subtree:
                 subtree.add(child)
                 collect_children(child)
 
-    collect_children(mime_type)
+    collect_children(node=mime_type)
     return subtree
 
 
@@ -606,7 +604,7 @@ def get_equivalent_file_types(
         if file_type.value in mime_types:
             equivalents.add(file_type)
     if raise_error and len(equivalents) != len(mime_types):
-        missing_mimetypes = mime_types - set([mt.value for mt in equivalents])
+        missing_mimetypes = mime_types - set(mt.value for mt in equivalents)
         raise ValueError(
             f"No equivalent FileType found the {len(mime_types) - len(equivalents)} following MIME types: {missing_mimetypes}"
         )

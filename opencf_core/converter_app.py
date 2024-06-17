@@ -161,7 +161,9 @@ class BaseConverterApp:
                 map(lambda x: f"* {x[0]} -> {x[1]}", self.get_supported_conversions())
             )
             logger.error(
-                f"Conversion from {self.input_file_type} to {self.output_file_type} not supported. Supported convertions are : {_}"
+                "Conversion from %s to %s not supported. Supported convertions are : {_}",
+                self.input_file_type,
+                self.output_file_type,
             )
             return
 
@@ -171,7 +173,7 @@ class BaseConverterApp:
         # Try each converter class until one succeeds
         for converter_class in converter_classes:
             try:
-                logger.info(f"Atempting conversion with {converter_class.__name__}")
+                logger.info("Atempting conversion with %s", converter_class.__name__)
 
                 # Instantiate the converter
                 converter = converter_class(self.input_files, self.output_file)
@@ -184,10 +186,12 @@ class BaseConverterApp:
 
                 # Break the loop if conversion succeeds
                 break
-            except Exception as e:
-                logger.error(f"Conversion with {converter_class.__name__} failed: {e}")
+            except Exception as exc:
+                logger.error(
+                    "Conversion with %s failed: %s", converter_class.__name__, exc
+                )
                 logger.error(traceback.format_exc())
 
         # If none of the converter classes succeeded, log an error
         if not conversion_successful:
-            logger.error(f"{len(converter_classes)} conversion attempts failed.")
+            logger.error("%s conversion attempts failed.", len(converter_classes))
