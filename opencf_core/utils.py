@@ -34,13 +34,13 @@ def get_filepaths_from_inputs(args: List[str]) -> List[str]:
         path = Path(arg)
         # If arg is a directory, add all files within the directory
         if path.is_dir():
-            filepaths.extend([str(p) for p in path.rglob("*") if p.is_file()])
+            filepaths.extend(sorted([str(p) for p in path.rglob("*") if p.is_file()]))
         # If arg is a file, add the file path
         elif path.is_file():
             filepaths.append(str(path))
         # If arg is a glob pattern, add all matching file paths
         else:
-            filepaths.extend(glob.glob(arg))
+            filepaths.extend(sorted(glob.glob(str(path))))
 
     return filepaths
 
