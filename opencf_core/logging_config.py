@@ -30,8 +30,8 @@ class ColoredFormatter(logging.Formatter):
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-        return formatter.format(record)
+        formatter = logging.Formatter(fmt=log_fmt)
+        return formatter.format(record=record)
 
 
 class LoggerConfig:
@@ -50,23 +50,23 @@ class LoggerConfig:
             log_file (str, optional): Path to the log file. Defaults to None.
             level (int, optional): Logging level. Defaults to logging.INFO.
         """
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(level)
+        self.logger = logging.getLogger(name=name)
+        self.logger.setLevel(level=level)
 
         formatter = ColoredFormatter()
 
         # Remove existing handlers
         for handler in self.logger.handlers[:]:
-            self.logger.removeHandler(handler)
+            self.logger.removeHandler(hdlr=handler)
 
         # Add console handler
         console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
+        console_handler.setFormatter(fmt=formatter)
+        self.logger.addHandler(hdlr=console_handler)
 
         # Add file handler if log_file is provided
         if log_file:
-            self.set_log_file(log_file)
+            self.set_log_file(log_file=log_file)
 
     def set_log_file(self, log_file: str) -> None:
         """Set log file.
@@ -85,12 +85,12 @@ class LoggerConfig:
             # Use the provided log file path
             self.log_file = Path(log_file).expanduser()
 
-        file_handler = logging.FileHandler(self.log_file)
+        file_handler = logging.FileHandler(filename=self.log_file)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
+        file_handler.setFormatter(fmt=formatter)
+        self.logger.addHandler(hdlr=file_handler)
 
     def set_log_level(self, level: int) -> None:
         """Set log level.
@@ -100,7 +100,7 @@ class LoggerConfig:
         """
         self.log_level = level
         if self.logger:
-            self.logger.setLevel(level)
+            self.logger.setLevel(level=level)
 
     def set_log_level_str(self, level: str) -> None:
         """Set log level.
@@ -109,14 +109,14 @@ class LoggerConfig:
             level (str): Logging level.
         """
         parsed_level: int = logging_nameToLevel[level.upper()]
-        self.set_log_level(parsed_level)
+        self.set_log_level(level=parsed_level)
 
 
 # Create an instance of LoggerConfig
 logger_config: LoggerConfig = LoggerConfig()
 
 # Set up logger with default log file location and level
-logger_config.setup_logger("openconv-core", log_file="default", level=logging.INFO)
+logger_config.setup_logger(name="openconv-core", log_file="default", level=logging.INFO)
 
 # Define the logger to log messages
 logger: logging.Logger = logger_config.logger

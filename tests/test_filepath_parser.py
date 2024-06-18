@@ -8,7 +8,8 @@ from opencf_core.utils import get_filepaths_from_inputs
 class TestGetFilepathsFromCli(unittest.TestCase):
     def setUp(self):
         # Create a temporary directory
-        self.test_dir = tempfile.TemporaryDirectory()
+        _ = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+        self.test_dir = _
         self.test_path = Path(self.test_dir.name)
 
         # Create some files and directories for testing

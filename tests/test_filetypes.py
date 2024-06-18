@@ -7,8 +7,10 @@ from opencf_core.filetypes import FileType, MimeType
 DATA_FOLDER = Path(__file__).parent.parent / "examples" / "data"
 assert DATA_FOLDER.exists() and DATA_FOLDER.is_dir()
 
+FileType_XML = FileType.XML  # type: ignore # pylint: disable=no-member
 
-class FileTypeTest(unittest.TestCase):
+
+class FileTypeTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
     def test_different_mimetypes(self):
         mimetype1 = MimeType()
         mimetype2 = MimeType()
@@ -98,7 +100,7 @@ class FileTypeTest(unittest.TestCase):
         self.assertTrue(FileType.TEXT.is_valid_mime_type(text_path))
         self.assertTrue(FileType.XLSX.is_valid_mime_type(xlsx_path))
         self.assertTrue(FileType.DOC_SPREADSHEET.is_valid_mime_type(xlsx_path))
-        self.assertTrue(FileType.XML.is_valid_mime_type(xml_path))
+        self.assertTrue(FileType_XML.is_valid_mime_type(xml_path))
 
         # the mimetype should be invalid
         self.assertFalse(FileType.TEXT.is_valid_mime_type(xlsx_path))
@@ -108,7 +110,7 @@ class FileTypeTest(unittest.TestCase):
         # by checking only the content, all flat files identified as text/plain should match with all possible text/plain formats
         # no need actually, while fill up the matches ?
         self.assertFalse(FileType.CSV.is_valid_mime_type(text_path))
-        self.assertFalse(FileType.XML.is_valid_mime_type(text_path))
+        self.assertFalse(FileType_XML.is_valid_mime_type(text_path))
         # text/plain has been added in txt options upper_mime_types,
         # as csv can't be easily deteted i guess
         self.assertTrue(FileType.TEXT.is_valid_mime_type(csv_path))
@@ -122,7 +124,7 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_suffix(".xlsx")[0], FileType.XLSX)
         self.assertEqual(FileType.from_suffix(".json")[0], FileType.JSON)
         self.assertEqual(FileType.from_suffix(".jpg")[0], FileType.JPEG)
-        self.assertEqual(FileType.from_suffix(".xml")[0], FileType.XML)
+        self.assertEqual(FileType.from_suffix(".xml")[0], FileType_XML)
         self.assertEqual(FileType.from_suffix(".unknown")[0], FileType.UNHANDLED)
         self.assertEqual(FileType.from_suffix("")[0], FileType.NOTYPE)
 
@@ -151,7 +153,7 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_mimetype(xlsx_path)[0], FileType.XLSX)
         self.assertEqual(FileType.from_mimetype(json_path)[0], FileType.JSON)
         self.assertEqual(FileType.from_mimetype(img_path)[0], FileType.JPEG)
-        self.assertEqual(FileType.from_mimetype(xml_path)[0], FileType.XML)
+        self.assertEqual(FileType.from_mimetype(xml_path)[0], FileType_XML)
 
         # Test with return_matches=True
         self.assertEqual(
@@ -160,7 +162,7 @@ class FileTypeTest(unittest.TestCase):
         )
         self.assertEqual(
             FileType.from_mimetype(xml_path, return_matches=True),
-            (FileType.XML, (FileType.XML,)),
+            (FileType_XML, (FileType_XML,)),
         )
         # Need to find a file which content is unhandled by the magic moule
         # self.assertEqual(FileType.from_mimetype(DATA_FOLDER / "example.xyz", return_matches=True), (FileType.UNHANDLED, tuple()))
@@ -179,7 +181,7 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_path(xlsx_path)[0], FileType.XLSX)
         self.assertEqual(FileType.from_path(json_path)[0], FileType.JSON)
         self.assertEqual(FileType.from_path(img_path)[0], FileType.JPEG)
-        self.assertEqual(FileType.from_path(xml_path)[0], FileType.XML)
+        self.assertEqual(FileType.from_path(xml_path)[0], FileType_XML)
 
         # Test read_content=True
         self.assertEqual(
@@ -200,7 +202,7 @@ class FileTypeTest(unittest.TestCase):
             FileType.from_path(img_path, read_content=True)[0], FileType.JPEG
         )
         self.assertEqual(
-            FileType.from_path(xml_path, read_content=True)[0], FileType.XML
+            FileType.from_path(xml_path, read_content=True)[0], FileType_XML
         )
 
         # Test with return_matches=True
@@ -255,7 +257,7 @@ class FileTypeTest(unittest.TestCase):
         self.assertEqual(FileType.from_suffix(".JPG"), (FileType.JPEG, tuple()))
         self.assertEqual(FileType.from_suffix(".jpeg"), (FileType.JPEG, tuple()))
         self.assertEqual(FileType.from_suffix(".docx"), (FileType.DOCX, tuple()))
-        self.assertEqual(FileType.from_suffix(".xml"), (FileType.XML, tuple()))
+        self.assertEqual(FileType.from_suffix(".xml"), (FileType_XML, tuple()))
         self.assertEqual(FileType.from_suffix(".r"), (FileType.UNHANDLED, tuple()))
 
         # test with return matches
@@ -295,7 +297,7 @@ class FileTypeTest(unittest.TestCase):
         )
         self.assertEqual(
             FileType.from_suffix(".xml", return_matches=True),
-            (FileType.XML, (FileType.XML,)),
+            (FileType_XML, (FileType_XML,)),
         )
         self.assertEqual(
             FileType.from_suffix(".r", return_matches=True),
