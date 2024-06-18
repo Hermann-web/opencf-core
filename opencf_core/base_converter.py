@@ -22,7 +22,7 @@ from typing import Any, Generic, Iterable, List, Optional, Set, Tuple, TypeVar, 
 
 from .file_handler import ResolvedInputFile
 from .filetypes import FileType, get_file_types_clidren
-from .io_handler import Reader, SamePathReader, Writer
+from .io_handler import Converter, Reader, SamePathReader, Writer
 from .logging_config import logger
 
 T = TypeVar("T")
@@ -312,6 +312,8 @@ class FolderAsOutputConversionArgs:
 
 
 class WriterBasedConverter(BaseConverter[None]):
+    converters: List[Converter] = []
+
     def custom_io_handlers_check(self):
         """
         Check if the file writer is valid.
@@ -347,7 +349,6 @@ class WriterBasedConverter(BaseConverter[None]):
 
         return output_path
 
-    @abstractmethod
     def _convert(self, input_contents: List, args: None) -> Any:
         """
         Abstract method to be implemented by subclasses to perform the actual file conversion process.
@@ -356,7 +357,18 @@ class WriterBasedConverter(BaseConverter[None]):
         :param args: Arguments required for the conversion process, specific to the type of conversion.
         :return: The converted content.
         """
-        logger.info("Conversion method not implemented")
+        content = input_contents
+        for converter in self.converters:
+            if not converter.check_input_format(content=content):
+                raise ValueError(
+                    f"Input content format check failed for content (type={type(content)}) in converter {converter.__class__.__name__}. Recheck your converter input validation vs your previous converter output content"
+                )
+            content = converter.convert(content=content)
+            if not converter.check_output_format(content=content):
+                raise ValueError(
+                    f"Output content format check failed for content (type={type(content)}) in converter {converter.__class__.__name__}. Recheck 'your converter output content' vs output validation"
+                )
+        return content
 
     def __get_bad_output_content_solving_tips__(self) -> str:
         """

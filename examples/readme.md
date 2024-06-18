@@ -181,3 +181,124 @@ For example, to convert an XLSX file to CSV, run the script as follows:
 ```bash
 python examples/cli_app_example.py examples/data/example.xlsx -o examples/data/example.csv
 ```
+
+## Abstract `Converter` Class
+
+The `Converter` class provides a structured way to define data converters, including methods to check input and output formats, and perform the conversion. Here's the abstract base class and an example implementation:
+
+### Previous Implementation Approach
+
+Previously, when writing an implementation of `WriterBasedConverter`, one would typically override the `_convert` method directly. Here’s a simplified example to illustrate:
+
+```python
+class TXTToTXTConverter(BaseConverter):
+
+    file_reader = TxtToStrReader()
+    # no file writer means the converter will handle the saving
+
+    @classmethod
+    def _get_supported_input_type(cls) -> FileType:
+        return FileType.TEXT
+
+    @classmethod
+    def _get_supported_output_type(cls) -> FileType:
+        return FileType.TEXT
+
+    def _convert(self, input_contents: List[str], output_file: Path, **kwargs):
+        md_content = "\n".join(input_contents)
+        output_file.write_text(md_content)
+```
+
+In this method:
+
+- The `_convert` method is overridden to implement the conversion logic.
+- The input and output formats are defined within the `_convert` method itself.
+
+### New Implementation Approach with `Converter` Class
+
+With the new `Converter` class, the conversion process is broken down into more modular steps:
+
+1. **Checking Input Format**: Ensure that the content meets the expected input format.
+2. **Checking Output Format**: Ensure that the content meets the expected output format.
+3. **Performing Conversion**: Implement the actual conversion logic.
+
+This structure provides a more robust framework for implementing converters and facilitates better code reuse and readability.
+
+### Example Implementation: `StrToStrConverter`
+
+```python
+from typing import List
+
+class StrToStrConverter(Converter):
+    def _check_input_format(self, content: List[str]) -> bool:
+        return isinstance(content, List) and all(
+            isinstance(item, str) for item in content
+        )
+
+    def _check_output_format(self, content: str) -> bool:
+        return isinstance(content, str)
+
+    def _convert(self, content: List[str]) -> str:
+        md_content = "\n".join(content)
+        return md_content
+```
+
+### Example Usage: `MDToTXTConverter`
+
+The `MDToTXTConverter` class demonstrates the new approach where an attribute `converters` is defined:
+
+```python
+class MDToTXTConverter(WriterBasedConverter):
+    file_reader = TxtToStrReader()
+    converters = [StrToStrConverter()]
+    file_writer = StrToTxtWriter()
+
+    @classmethod
+    def _get_supported_input_types(cls) -> FileType:
+        return FileType.MD
+
+    @classmethod
+    def _get_supported_output_types(cls) -> FileType:
+        return FileType.TEXT
+```
+
+### Key Differences and Benefits
+
+#### Modularity and Reusability
+
+- **Old Way**: The conversion logic is embedded directly within the `_convert` method, making it less modular and harder to reuse.
+- **New Way**: The `Converter` class separates the concerns of checking input/output formats and performing the conversion, promoting modularity and reusability.
+
+#### Clarity and Structure
+
+- **Old Way**: The conversion logic can become cluttered, especially when handling complex conversions involving multiple steps or checks.
+- **New Way**: By defining distinct methods for checking formats and performing conversion, the new approach offers a clearer and more structured way to implement converters.
+
+#### Attribute `converters`
+
+- **Old Way**: The `_convert` method must be overridden for each specific converter.
+- **New Way**: One can define a list of converter instances in the `converters` attribute, allowing for chaining or combining multiple conversion steps easily.
+
+### Practical Example
+
+To convert markdown files (`.md`) to text files (`.txt`) using the new `MDToTXTConverter`, you would use the following command:
+
+```bash
+python examples/cli_app_example.py examples/data/*.md -o examples/output.txt
+```
+
+### Summary
+
+The introduction of the abstract `Converter` class offers a more structured and modular approach to defining data converters. By separating the checking of input/output formats and the conversion logic, it enhances code clarity, reusability, and maintainability. The new approach also allows for defining a chain of converters through the `converters` attribute, further improving flexibility in handling complex conversion tasks.
+
+## Summary
+
+Here's a recap of the main points:
+
+- **Custom Converters:** You can define and use custom converters for various data transformation tasks.
+- **Multi-file Support:** The application can handle multiple files, folders, and glob patterns as input, providing flexibility for batch processing.
+- **Output Options:** The application supports saving output to a specified file or folder, with the ability to infer or specify the output format.
+- **Abstract Converter Class:** A structured way to define data converters, with methods to check input and output formats and perform the conversion.
+- **Practical Example:** Demonstrated using the `MDToTXTConverter` and `StrToStrConverter` classes to convert markdown files to text files.
+
+By incorporating these features, the CLI application becomes a powerful tool for various file conversion tasks, accommodating complex input and output scenarios.

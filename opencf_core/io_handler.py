@@ -95,6 +95,60 @@ class Writer(ABC):
         raise NotImplementedError
 
 
+class Converter(ABC):
+    """
+    Abstract base class for data converters.
+    """
+
+    def check_input_format(self, content: Any) -> bool:
+        return self._check_input_format(content=content)
+
+    @abstractmethod
+    def _check_input_format(self, content: Any) -> bool:
+        """
+        Checks if the provided content matches the expected input format.
+
+        Args:
+            content (Any): The content to be checked.
+
+        Returns:
+            bool: True if the content matches the expected input format, False otherwise.
+        """
+        raise NotImplementedError
+
+    def check_output_format(self, content: Any) -> bool:
+        return self._check_output_format(content=content)
+
+    @abstractmethod
+    def _check_output_format(self, content: Any) -> bool:
+        """
+        Checks if the provided content matches the expected output format.
+
+        Args:
+            content (Any): The content to be checked.
+
+        Returns:
+            bool: True if the content matches the expected output format, False otherwise.
+        """
+        raise NotImplementedError
+
+    def convert(self, content: Any) -> Any:
+        return self._convert(content=content)
+
+    @abstractmethod
+    def _convert(self, content: Any) -> Any:
+        """
+        Converts the provided content from the input format to the output format.
+
+        Args:
+            content (Any): The content to be converted.
+
+        Returns:
+            Any: The converted content in the output format.
+        """
+        raise NotImplementedError
+
+
 class SamePathReader(Reader):
     """
     A Reader that returns the input path itself, useful for operations where the file path is the desired output.

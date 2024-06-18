@@ -6,13 +6,13 @@ This module contains the main application logic.
 
 import argparse
 
-from simple_converter import TXTToMDConverter, TXTToTXTConverter
-
 from opencf_core.converter_app import BaseConverterApp
+
+from .simple_converter import MDToTXTConverter, TXTToMDConverter, TXTToTXTConverter
 
 
 class ConverterApp(BaseConverterApp):
-    converters = [TXTToMDConverter, TXTToTXTConverter]
+    converters = [TXTToMDConverter, MDToTXTConverter, TXTToTXTConverter]
 
 
 def main():

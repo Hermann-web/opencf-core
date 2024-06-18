@@ -7,10 +7,24 @@ from opencf_core.base_converter import (
 )
 from opencf_core.file_handler import ResolvedInputFile
 from opencf_core.filetypes import FileType
-from opencf_core.io_handler import StrToTxtWriter, TxtToStrReader
+from opencf_core.io_handler import Converter, StrToTxtWriter, TxtToStrReader
 from opencf_core.logging_config import logger_config
 
 logger_config.set_log_level_str(level="debug")
+
+
+class StrToStrConverter(Converter):
+    def _check_input_format(self, content: List[str]) -> bool:
+        return isinstance(content, List) and all(
+            isinstance(item, str) for item in content
+        )
+
+    def _check_output_format(self, content: str) -> bool:
+        return isinstance(content, str)
+
+    def _convert(self, content: List[str]) -> str:
+        md_content = "\n".join(content)
+        return md_content
 
 
 class TXTToMDConverter(WriterBasedConverter):
@@ -25,9 +39,23 @@ class TXTToMDConverter(WriterBasedConverter):
     def _get_supported_output_types(cls) -> FileType:
         return FileType.MD
 
-    def _convert(self, input_contents: List[str], _=None):
+    def _convert(self, input_contents: List[str], args=None):
         md_content = "\n".join(input_contents)
         return md_content
+
+
+class MDToTXTConverter(WriterBasedConverter):
+    file_reader = TxtToStrReader()
+    converters = [StrToStrConverter()]
+    file_writer = StrToTxtWriter()
+
+    @classmethod
+    def _get_supported_input_types(cls) -> FileType:
+        return FileType.MD
+
+    @classmethod
+    def _get_supported_output_types(cls) -> FileType:
+        return FileType.TEXT
 
 
 class TXTToTXTConverter(FileAsOutputConverter):
@@ -64,6 +92,9 @@ def main():
 
     converter2 = TXTToTXTConverter(input_file, input_file)
     converter2.run_conversion()
+
+    converter3 = MDToTXTConverter(output_file, input_file)
+    converter3.run_conversion()
 
 
 if __name__ == "__main__":
