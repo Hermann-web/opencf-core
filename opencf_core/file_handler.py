@@ -107,7 +107,7 @@ class ResolvedInputFile:
         else:
             # If the method cannot determine whether the path is for a file or directory, raise an error
             raise ValueError(
-                "Failed to resolve if the path is a directory or a file. Ensure correct path and file_type are provided."
+                f"Failed to resolve if the path '{self.path}' is a directory or a file. Ensure correct path and file_type are provided."
             )
 
         return is_dir
